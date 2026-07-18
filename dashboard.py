@@ -56,23 +56,19 @@ def load_real():
         def fmt_k(v):
             return f"{v/1000:g}k" if v >= 1000 else str(v)
 
-        def skill_tree(role):
-            """Official per-role skills from the xlsx -> [[name, level, exec], ...]."""
-            try:
-                import framework
-                seen, ded = set(), []
-                for s in framework.get_skills(role):   # same role name can span sectors
-                    if s["code"] not in seen:
-                        seen.add(s["code"]); ded.append(s)
-                exc = {x["code"] for x in framework.select_executable(ded, k=99)}
-                return [[s["skill"], s["required_level"], 1 if s["code"] in exc else 0]
-                        for s in ded]
-            except Exception:
-                return []
+        # Build rich per-agent specs: K&A-grounded skill descriptions + per-skill learned
+        # guidance (parsed from agent_final.md), one downloadable markdown each + a team zip.
+        import teamspec, datetime
+        enrich_src = json.load(open(d.get("enrichment_source", "data/role_enrichment.json")))
+        built = teamspec.build_team(d, enrich_src, spec,
+                                    datetime.date.today().isoformat())
+        by_id = {a["id"]: a for a in built["agents"]}
+
         team = {
             "name": d["name"], "purpose": d["purpose"],
             "alternates": d.get("off_path_alternates", []),
             "honesty": d.get("honesty_note", ""),
+            "zip": built["zip"],          # sibling compressed archive of all agent specs
             "agents": [{
                 "id": a["id"], "stage": a["stage"], "role": a["role"],
                 "anchor": bool(a.get("anchor")),
@@ -84,9 +80,11 @@ def load_real():
                 "salary": (lambda b: f"S${fmt_k(b['median'])} – {fmt_k(b['high'])}")(
                     a["enrichment_summary"]["salary_band"]),
                 "produces": a.get("produces", ""), "consumes": a.get("consumes"),
-                "sk": skill_tree(a["role"]),
+                "sk": by_id[a["id"]]["sk"],     # rich rows: name, code, level, exec, prof, ka, guidance
+                "md": by_id[a["id"]]["md"],     # full downloadable per-agent spec
             } for a in d["agents"]],
         }
+        print(f"dashboard: built {built['count']} agent specs -> {built['zip']}")
 
     return {"role": out["role"], "sector": out["sector"], "track": out.get("track", ""),
             "rounds": len(out["rounds"]),

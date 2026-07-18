@@ -6,6 +6,10 @@ events.jsonl
 dashboard.html
 agent_v0.md
 
+# Generated per-agent team specs + zip (rebuilt by dashboard.py on every run)
+team_specs/
+agent_team_specs.zip
+
 # Stand-alone scraper outputs (raw posting text — not committed)
 # A small sample fixture under data/fixtures/ IS committed for --dry-run.
 data/cache/

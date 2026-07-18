@@ -81,15 +81,30 @@ def select_executable(skills, k=5):
     return [s for s in skills
             if any(kw in s["skill"].lower() for kw in EXEC_KEYWORDS)][:k]
 
+@lru_cache(maxsize=1)
+def _ka_index():
+    """One pass over the ~150K-row K&A sheet -> {(code, level): {prof, items}}. The sheet
+    is huge; scanning it once per skill (12 agents * ~28 skills) would be 300+ full scans."""
+    idx = {}
+    for _typ, c, _sec, _cat, _title, _desc, lvl, pdesc, item, kind in _sheet("TSC_CCS_K&A"):
+        if not c:
+            continue
+        e = idx.setdefault((c, normalize_level(lvl)),
+                           {"proficiency_description": "", "items": []})
+        if item:
+            e["items"].append({"item": str(item).strip(),
+                               "kind": str(kind or "").strip().lower()})
+        if pdesc and not e["proficiency_description"]:
+            e["proficiency_description"] = pdesc
+    return idx
+
 def get_ka(code, level):
     """Official per-level Knowledge & Ability checklist — the rubric that grounds every graded task."""
-    items, prof = [], ""
-    for _typ, c, _sec, _cat, _title, _desc, lvl, pdesc, item, kind in _sheet("TSC_CCS_K&A"):
-        if c == code and normalize_level(lvl) == level and item:
-            items.append({"item": str(item).strip(),
-                          "kind": str(kind or "").strip().lower()})
-            prof = pdesc or prof
-    return {"proficiency_description": prof or "", "items": items}
+    e = _ka_index().get((code, normalize_level(level)))
+    if not e:
+        return {"proficiency_description": "", "items": []}
+    return {"proficiency_description": e["proficiency_description"],
+            "items": [dict(i) for i in e["items"]]}
 
 def get_sector(role):
     for sector, track, jr, *_ in _sheet("Job Role_Description"):
