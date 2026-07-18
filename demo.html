@@ -69,42 +69,8 @@ const IS_DEMO_ROLE=ROLE.startsWith('Data Analyst / Associate Data Engineer');
 const ROUNDS=REAL?REAL.rounds:2;
 const SPEC_TEXT=REAL?REAL.spec:null;
 const SALARY=REAL?REAL.salary:{low:4200,high:7800,live:false};
-const TEAM=(REAL&&REAL.team)?REAL.team:{
-  name:'Data pipeline team — fixed demo path',
-  purpose:'One deterministic route for the demo: each stage consumes the previous stage’s real artifact.',
-  agents:[
-    {id:'data-engineer',stage:1,role:'Data Engineer',anchor:false,execItems:1,
-     enrich:'2 live postings · 12 tools · matched via tfidf',salary:'S$5.8k – 12k',
-     produces:'clean, validated dataset artifact',consumes:null,
-     sk:[['Data Engineering',3,1],['Database Administration',3,1],['Data Analytics and Computational Modelling',3,1],
-         ['Configuration Tracking',1,0],['Configuration Tracking',2,0],['Business Needs Analysis',2,0],
-         ['Ethical Culture',3,0],['Data Collection and Analysis',3,0],['Impact Indicators, Measurement and Reporting',3,0],
-         ['Software Configuration',3,0],['Programming and Coding',3,0],['Emerging Technology Synthesis',3,0],
-         ['Data Design',3,0],['Stakeholder Management',3,0],['Computational Modelling',3,0],
-         ['Security Architecture',3,0],['Strategy Implementation',3,0],['Change Management',3,0],
-         ['Data Migration',3,0],['Taxonomy Application',4,0],['Emerging Technology Synthesis',4,0],
-         ['Data Ethics',4,0],['Data Governance',4,0],['System Integration',4,0],
-         ['Project Management',4,0],['Quality Standards',4,0]]},
-    {id:'data-analyst',stage:2,role:'Data Analyst / Associate Data Engineer',anchor:true,execItems:2,
-     enrich:'2 live postings · 12 tools · matched via tfidf+ssoc',salary:'S$2.8k – 5.5k',
-     produces:'analysis / dashboard deliverable',consumes:'data-engineer',
-     sk:[['Data Engineering',2,1],['Database Administration',2,1],['Data Analytics',2,1],
-         ['Data Visualisation',3,1],['Data Analytics',3,1],['Stakeholder Management',2,0],
-         ['Business Needs Analysis',2,0],['Business Performance Management',3,0],['Design Thinking Practice',3,0],
-         ['Budgeting',3,0],['Networking',3,0],['Project Management',3,0],
-         ['Data Ethics',3,0],['Business Innovation',4,0]]},
-    {id:'data-scientist',stage:3,role:'Data Scientist / Artificial Intelligence Scientist',anchor:false,execItems:0,
-     enrich:'1 live posting · 12 tools · matched via tfidf+ssoc',salary:'S$9.8k – 12.5k',
-     produces:'model / insight deliverable',consumes:'data-analyst',
-     sk:[['Self-Learning Systems',4,0],['Stakeholder Management',4,0],['Computer Vision Technology',4,0],
-         ['Emerging Technology Synthesis',4,0],['Computational Modelling',5,0],['Business Innovation',5,0],
-         ['Data Ethics',5,0],['Intelligent Reasoning',5,0],['Quality Standards',5,0],
-         ['Software Design',5,0],['Test Planning',5,0],['Business Needs Analysis',5,0],
-         ['Pattern Recognition Systems',5,0],['Data Design',5,0],['Data Governance',5,0],
-         ['Data Strategy',5,0],['Design Thinking Practice',5,0],['Project Management',5,0],
-         ['Solution Architecture',5,0],['Text Analytics and Processing',6,0]]}],
-  alternates:['Data Architect','Chief Data Officer / Chief Artificial Intelligence Officer'],
-  honesty:'Seams are EXERCISED — stage N consumes stage N−1’s real artifact in separate sandboxes — but rubric-assessed, NOT execution-verified. Never blended into the executed number.'};
+const TEAM_EMBED={"name":"Enterprise tech org \u2014 12-agent fixed demo path","purpose":"One deterministic delivery pipeline for the demo. The pipeline reads this manifest and invokes exactly these agents in this order; no role resolution / fuzzy matching at demo time.","squads":["Architecture","Delivery","Data & AI","Build & Platform","Secure & Govern","Product & Delivery"],"execTrack":"Only the Data-squad agents with battery_seed items are execution-verified (Data Engineering L2 on the Data Engineer; Database Administration L2 + Data Analytics L2 on the Data Analyst). All other agents are rubric-assessed, badged 'NOT execution-verified' \u2014 two tracks, never blended (\u00a70.5).","honesty":"Agent\u2192agent seams are EXERCISED (stage N consumes stage N-1's real artifact in separate sandboxes) but rubric-assessed, not execution-verified \u2014 never blended into the executed number (\u00a77.5).","agents":[{"id":"enterprise-architect","stage":1,"squad":"Architecture","role":"Enterprise Architect","anchor":false,"execItems":0,"enrich":"2 live postings \u00b7 12 tools \u00b7 matched via tfidf","salary":"S$13.745k \u2013 24.83k","produces":"architecture & system design","sk":[["Project Feasibility Assessment",5,0],["Sustainability Management",5,0],["Organisational Design",5,0],["Networking",5,0],["Business Environment Analysis",5,0],["Strategy Planning",5,0],["Business Performance Management",5,0],["Business Agility",5,0],["IT Strategy",5,0],["Design Thinking Practice",5,0],["Project Management",6,0],["Change Management",6,0],["Organisational Analysis",6,0],["Enterprise Architecture",6,0],["Business Risk Management",6,0],["Partnership Management",6,0],["Agile Software Development",6,0],["Stakeholder Management",6,0],["Performance Management",6,0],["Solution Architecture",6,0],["Business Innovation",6,0]]},{"id":"program-manager","stage":2,"squad":"Delivery","role":"Program Manager","anchor":false,"execItems":0,"enrich":"4 live postings \u00b7 12 tools \u00b7 matched via tfidf+ssoc","salary":"S$10k \u2013 18k","produces":"delivery plan & cross-squad orchestration","sk":[["Emerging Technology Synthesis",4,0],["Budgeting",4,0],["Portfolio Management",4,0],["Change Management",4,0],["Business Risk Management",4,0],["Organisational Analysis",4,0],["Contract Management",4,0],["Business Needs Analysis",4,0],["Business Innovation",4,0],["Partnership Management",4,0],["Strategy Planning",4,0],["Data Analytics",4,1],["Strategy Implementation",4,0],["Networking",4,0],["People and Performance Management",4,0],["Organisational Design",4,0],["Process Improvement and Optimisation",4,0],["Stakeholder Management",4,0],["Business Requirements Mapping",4,0],["Business Performance Management",4,0],["Business Agility",4,0],["Business Process Re-engineering",4,0],["Data Visualisation",4,1],["Design Thinking Practice",4,0],["Manpower Planning",4,0],["Business Environment Analysis",4,0],["Solution Architecture",4,0],["Agile Coaching",5,0],["Project Management",5,0],["Learning and Development",5,0]]},{"id":"data-engineer","stage":3,"squad":"Data & AI","role":"Data Engineer","anchor":false,"execItems":1,"enrich":"3 live postings \u00b7 12 tools \u00b7 matched via tfidf","salary":"S$6.25k \u2013 12k","produces":"clean, validated dataset artifact","sk":[["Ethical Culture",3,0],["Data Collection and Analysis",3,0],["Impact Indicators, Measurement and Reporting",3,0],["Software Configuration",3,0],["Programming and Coding",3,0],["Data Analytics and Computational Modelling",3,1],["Emerging Technology Synthesis",3,0],["Taxonomy Application",4,0],["Configuration Tracking",1,0],["Configuration Tracking",2,0],["Business Needs Analysis",2,0],["Data Design",3,0],["Stakeholder Management",3,0],["Computational Modelling",3,0],["Database Administration",3,1],["Security Architecture",3,0],["Strategy Implementation",3,0],["Change Management",3,0],["Data Migration",3,0],["Data Engineering",3,1],["Emerging Technology Synthesis",4,0],["Data Ethics",4,0],["Data Governance",4,0],["System Integration",4,0],["Project Management",4,0],["Quality Standards",4,0]]},{"id":"data-analyst","stage":4,"squad":"Data & AI","role":"Data Analyst / Associate Data Engineer","anchor":true,"execItems":2,"enrich":"2 live postings \u00b7 12 tools \u00b7 matched via tfidf+ssoc","salary":"S$2.8k \u2013 5.5k","produces":"analysis / dashboard deliverable","sk":[["Data Engineering",2,1],["Stakeholder Management",2,0],["Database Administration",2,1],["Data Analytics",2,1],["Business Needs Analysis",2,0],["Business Performance Management",3,0],["Data Visualisation",3,1],["Design Thinking Practice",3,0],["Budgeting",3,0],["Networking",3,0],["Project Management",3,0],["Data Analytics",3,1],["Data Ethics",3,0],["Business Innovation",4,0]]},{"id":"data-scientist","stage":5,"squad":"Data & AI","role":"Data Scientist / Artificial Intelligence Scientist","anchor":false,"execItems":0,"enrich":"1 live posting \u00b7 12 tools \u00b7 matched via tfidf+ssoc","salary":"S$9.75k \u2013 12.5k","produces":"model / insight deliverable","sk":[["Self-Learning Systems",4,0],["Stakeholder Management",4,0],["Computer Vision Technology",4,0],["Emerging Technology Synthesis",4,0],["Computational Modelling",5,0],["Business Innovation",5,0],["Data Ethics",5,0],["Intelligent Reasoning",5,0],["Quality Standards",5,0],["Software Design",5,0],["Test Planning",5,0],["Business Needs Analysis",5,0],["Pattern Recognition Systems",5,0],["Data Design",5,0],["Data Governance",5,0],["Data Strategy",5,0],["Design Thinking Practice",5,0],["Project Management",5,0],["Solution Architecture",5,0],["Text Analytics and Processing",6,0]]},{"id":"full-stack-developer","stage":6,"squad":"Build & Platform","role":"Senior Full Stack Developer","anchor":false,"execItems":0,"enrich":"1 live posting \u00b7 12 tools \u00b7 matched via tfidf+ssoc","salary":"S$10k \u2013 12k","produces":"application / UI build","sk":[["Change Management",3,0],["Configuration Tracking",3,0],["Test Planning",3,0],["Database Administration",3,1],["Business Requirements Mapping",3,0],["Business Environment Analysis",3,0],["Applications Support and Enhancement",3,0],["System Integration",3,0],["Software Configuration",3,0],["Business Risk Management",3,0],["Business Needs Analysis",3,0],["Software Testing",3,0],["Emerging Technology Synthesis",4,0],["User Interface Design",4,0],["Agile Software Development",4,0],["Data Design",4,0],["Software Design",4,0],["Performance Management",4,0],["Applications Integration",4,0],["Continuous Integration and Continuous Deployment",4,0],["Product Management",4,0],["Service Level Management",4,0],["Cloud Computing",4,0],["Applications Development",4,0],["Problem Management",4,0],["Project Management",4,0],["Quality Standards",5,0]]},{"id":"devops-engineer","stage":7,"squad":"Build & Platform","role":"DevOps Engineer","anchor":false,"execItems":0,"enrich":"3 live postings \u00b7 12 tools \u00b7 matched via tfidf+ssoc","salary":"S$7.5k \u2013 12k","produces":"CI/CD pipeline + deployment","sk":[["Configuration Tracking",3,0],["Continuous Integration and Continuous Deployment",3,0],["Business Environment Analysis",3,0],["Business Requirements Mapping",3,0],["Applications Support and Enhancement",3,0],["Network Configuration",3,0],["Security Administration",3,0],["Business Risk Management",3,0],["Problem Management",3,0],["Agile Software Development",3,0],["Business Agility",4,0],["User Interface Design",4,0],["Database Administration",4,1],["Software Configuration",4,0],["Test Planning",4,0],["Data Design",4,0],["Applications Integration",4,0],["System Integration",4,0],["Software Testing",4,0],["Stakeholder Management",4,0],["Quality Standards",4,0],["Change Management",4,0],["Applications Development",4,0],["Emerging Technology Synthesis",4,0],["Business Needs Analysis",4,0],["Performance Management",4,0],["Applications Support and Enhancement",4,0],["Agile Coaching",4,0],["Systems Design",4,0],["Software Design",4,0],["Project Management",4,0]]},{"id":"infrastructure-engineer","stage":8,"squad":"Build & Platform","role":"Infrastructure Engineer","anchor":false,"execItems":0,"enrich":"2 live postings \u00b7 12 tools \u00b7 matched via tfidf+ssoc","salary":"S$7k \u2013 7.4k","produces":"running platform / environment","sk":[["Stakeholder Management",3,0],["Business Requirements Mapping",3,0],["Software Configuration",3,0],["Procurement",3,0],["Change Management",3,0],["Configuration Tracking",3,0],["Business Environment Analysis",3,0],["Budgeting",3,0],["Security Administration",3,0],["Test Planning",3,0],["Process Improvement and Optimisation",3,0],["Service Level Management",3,0],["Partnership Management",3,0],["Contract Management",3,0],["Network Configuration",3,0],["Business Needs Analysis",3,0],["Business Risk Management",3,0],["Problem Management",3,0],["Network Administration and Maintenance",3,0],["Infrastructure Deployment",4,0],["Infrastructure Design",4,0],["Business Innovation",4,0],["Network Security",4,0],["Infrastructure Support",4,0],["Cyber and Data Breach Incident Management",4,0],["Solution Architecture",4,0],["Vendor Management",4,0],["Emerging Technology Synthesis",4,0],["Performance Management",4,0],["Quality Engineering",4,0],["Applications Integration",4,0],["Cloud Computing",4,0]]},{"id":"security-architect","stage":9,"squad":"Secure & Govern","role":"Security Architect","anchor":false,"execItems":0,"enrich":"2 live postings \u00b7 12 tools \u00b7 matched via tfidf+ssoc","salary":"S$11k \u2013 13k","produces":"secured pipeline + threat model","sk":[["Infrastructure Design",4,0],["Security Programme Management",4,0],["Security Administration",4,0],["Emerging Technology Synthesis",4,0],["Business Needs Analysis",4,0],["Security Architecture",4,0],["Strategy Implementation",4,0],["Cyber Risk Management",5,0],["Solution Architecture",5,0],["Strategy Planning",5,0],["Security Strategy",5,0],["Network Security",5,0],["Security Programme Management",5,0],["Stakeholder Management",5,0],["Security Governance",5,0],["Security Architecture",5,0]]},{"id":"data-protection-officer","stage":10,"squad":"Secure & Govern","role":"Data Protection Officer","anchor":false,"execItems":0,"enrich":"2 live postings \u00b7 12 tools \u00b7 matched via tfidf","salary":"S$7.35k \u2013 10k","produces":"compliance / data-governance sign-off","sk":[["Strategy Implementation",3,0],["Networking",4,0],["Business Negotiation",4,0],["Cyber and Data Breach Incident Management",4,0],["IT Standards",4,0],["Stakeholder Management",4,0],["Crisis Management",4,0],["Learning and Development",4,0],["People and Performance Management",4,0],["Data Sharing",4,0],["Audit and Compliance",4,0],["Data Protection Management",4,0],["Strategy Planning",4,0],["Budgeting",4,0],["Business Performance Management",4,0],["Business Agility",4,0],["Design Thinking Practice",4,0],["Manpower Planning",4,0],["Business Risk Management",4,0],["Data Ethics",4,0],["Data Governance",5,0],["Project Management",5,0]]},{"id":"head-of-product","stage":11,"squad":"Product & Delivery","role":"Head of Product","anchor":false,"execItems":0,"enrich":"3 live postings \u00b7 12 tools \u00b7 matched via tfidf","salary":"S$11.75k \u2013 28.64k","produces":"product vision / roadmap","sk":[["Artificial Intelligence Application in Product Development",4,0],["Automation Management in Product Development",4,0],["Strategy Implementation",4,0],["Project Management",5,0],["Demand Analysis",5,0],["Data Analytics",5,1],["Business Agility",5,0],["Business Environment Analysis",5,0],["Budgeting",5,0],["Strategy Planning",5,0],["Business Requirements Mapping",5,0],["Quality Standards",5,0],["Stakeholder Management",5,0],["Design Concepts Generation",5,0],["System Integration",5,0],["User Experience Design",5,0],["User Testing and Usability Testing",5,0],["Business Development",5,0],["Emerging Technology Synthesis",5,0],["Business Needs Analysis",5,0],["Manpower Planning",5,0],["Pricing Strategy",5,0],["Customer Experience Management",5,0],["People and Performance Management",5,0],["Partnership Management",5,0],["Networking",5,0],["User Interface Design",5,0],["Market Research",5,0],["Design Thinking Practice",6,0],["Business Performance Management",6,0],["Product Management",6,0],["Performance Management",6,0],["Learning and Development",6,0],["Portfolio Management",6,0],["Business Innovation",6,0],["Performance Management",5,0],["Business Performance Management",5,0],["Product Management",5,0],["Business Innovation",5,0],["Design Thinking Practice",5,0]]},{"id":"project-manager-scrum-master","stage":12,"squad":"Product & Delivery","role":"Project Manager / Scrum Master","anchor":false,"execItems":0,"enrich":"4 live postings \u00b7 12 tools \u00b7 matched via tfidf+ssoc","salary":"S$8k \u2013 15k","produces":"sprint plan + release","sk":[["Business Needs Analysis",2,0],["Business Environment Analysis",2,0],["Stakeholder Management",2,0],["Data Analytics",2,1],["Business Environment Analysis",3,0],["Contract Management",3,0],["Budgeting",3,0],["Business Needs Analysis",3,0],["Business Risk Management",3,0],["Strategy Implementation",3,0],["Data Analytics",3,1],["Partnership Management",3,0],["Emerging Technology Synthesis",3,0],["Business Performance Management",3,0],["Process Improvement and Optimisation",3,0],["Data Visualisation",3,1],["Business Requirements Mapping",3,0],["Change Management",3,0],["Networking",3,0],["Project Management",3,0],["Design Thinking Practice",3,0],["Stakeholder Management",3,0],["People and Performance Management",3,0],["Manpower Planning",3,0],["Learning and Development",4,0],["Agile Coaching",4,0],["Business Agility",4,0],["Solution Architecture",4,0],["Project Management",4,0]]}]};//GEN — generated from data/demo_team.json; refresh with: python3 gen_team_embed.py
+const TEAM=(REAL&&REAL.team)?REAL.team:TEAM_EMBED;
 
 /* ============ state ============ */
 const state={
@@ -531,19 +497,18 @@ function buildSpec(){
 /* ============ agent team · org-chart flowchart modal ============ */
 function teamNode(a,i){
   const anchor=a.anchor;
-  const badge=a.execItems>0
-    ?`<span style="font-family:${MONO};font-size:11px;padding:3px 8px;background:rgba(200,241,53,.12);color:${LIME}">✓ ${a.execItems} execution-verified item${a.execItems>1?'s':''}</span>`
-    :`<span style="font-family:${MONO};font-size:11px;padding:3px 8px;background:rgba(156,155,160,.12);color:${MUT}">○ rubric-only · NOT execution-verified</span>`;
-  return `<div id="tnode-${i}" class="tn" onclick="app.openSkillTree(${i})" title="View skill tree" style="width:400px;max-width:82vw;background:${anchor?'rgba(200,241,53,.05)':INSET};border:1px solid ${anchor?LIME:LINE};padding:16px 20px;position:relative;z-index:2">
-    ${anchor?`<div style="position:absolute;top:-11px;left:16px;background:${LIME};color:#0A0A0C;font-family:${MONO};font-size:10.5px;letter-spacing:1px;padding:3px 10px;font-weight:600">THIS AGENT · DELIVERED</div>`:''}
-    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
-      <span style="font-size:16.5px;font-weight:700">${esc(a.role)}</span>
-      <span style="font-family:${MONO};font-size:11px;color:${DIM};border:1px solid ${LINE};padding:2px 8px;white-space:nowrap">STAGE ${a.stage}</span>
+  return `<div id="tnode-${i}" class="tn" onclick="app.openSkillTree(${i})" title="${esc(a.role)} — click for skill tree" style="width:238px;background:${anchor?'rgba(200,241,53,.05)':INSET};border:1px solid ${anchor?LIME:LINE};padding:13px 15px;position:relative;z-index:2;box-sizing:border-box">
+    ${anchor?`<div style="position:absolute;top:-10px;left:12px;background:${LIME};color:#0A0A0C;font-family:${MONO};font-size:9.5px;letter-spacing:1px;padding:2px 8px;font-weight:600">THIS AGENT · DELIVERED</div>`:''}
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+      <span style="font-size:14px;font-weight:700;line-height:1.25">${esc(a.role)}</span>
+      <span style="font-family:${MONO};font-size:10px;color:${DIM};border:1px solid ${LINE};padding:1px 6px;white-space:nowrap">S${a.stage}</span>
     </div>
-    <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">${badge}
-      <span style="font-family:${MONO};font-size:11px;color:${AMBER}">${esc(a.salary)}</span></div>
-    <div style="font-family:${MONO};font-size:11.5px;color:${DIM};margin-top:8px">${esc(a.enrich)}</div>
-    <div style="font-family:${MONO};font-size:10.5px;letter-spacing:1px;color:${DIM};margin-top:9px">▸ CLICK FOR SKILL TREE</div>
+    <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+      ${a.execItems>0?`<span style="font-family:${MONO};font-size:10px;padding:2px 6px;background:rgba(200,241,53,.12);color:${LIME}">✓ ${a.execItems} executed</span>`
+                     :`<span style="font-family:${MONO};font-size:10px;padding:2px 6px;background:rgba(156,155,160,.12);color:${MUT}">○ rubric</span>`}
+      <span style="font-family:${MONO};font-size:10px;color:${AMBER}">${esc(a.salary)}</span>
+    </div>
+    <div style="font-family:${MONO};font-size:10.5px;color:${DIM};margin-top:8px;line-height:1.5">▸ ${esc(a.produces)}</div>
   </div>`;
 }
 function skillTreeRow(r){
@@ -570,43 +535,40 @@ function renderSkillTree(i){
     <button onclick="app.openTeam(true)" class="hv" style="background:none;border:1px solid ${LINE};color:${MUT};font-family:${MONO};font-size:12px;letter-spacing:1px;padding:8px 14px;cursor:pointer;margin-bottom:18px">← ORG CHART</button>
     <div style="font-family:${MONO};font-size:12px;letter-spacing:3px;color:${LIME};margin-bottom:8px">SKILL TREE · STAGE ${a.stage}${a.anchor?' · THIS AGENT':''}</div>
     <h3 style="font-family:${UNB};font-weight:700;font-size:22px;margin:0">${esc(a.role)}</h3>
-    <div style="font-family:${MONO};font-size:12px;color:${DIM};margin:10px 0 6px">${rows.length} official skills · <span style="color:${LIME}">${nExec} in execution battery</span> · <span style="color:${AMBER}">${esc(a.salary)}</span> · levels are the official required levels (SkillsFuture)</div>
+    <div style="font-family:${MONO};font-size:12px;color:${DIM};margin:10px 0 2px">${rows.length} official skills · <span style="color:${LIME}">${nExec} in execution battery</span> · <span style="color:${AMBER}">${esc(a.salary)}</span> · levels are the official required levels (SkillsFuture)</div>
+    <div style="font-family:${MONO};font-size:11.5px;color:${DIM};margin-bottom:6px">${esc(a.squad?a.squad+' squad · ':'')}${esc(a.enrich||'')}</div>
     <div style="margin-top:12px">${rows.map(skillTreeRow).join('')||`<div style="font-family:${MONO};font-size:12px;color:${DIM};padding:14px 0">no skill data for this role</div>`}</div>
     <div style="margin-top:20px;font-family:${MONO};font-size:11.5px;color:${DIM};line-height:1.7">✓ battery = proven by execution in this pipeline's Daytona sandboxes<br>○ rubric = LLM-judged against the K&amp;A checklist — never blended with executed scores</div>
   </div>
 </div>`;
 }
 function renderTeam(){
-  const chain=TEAM.agents.map((a,i)=>teamNode(a,i)).join('');
-  const last=TEAM.agents[TEAM.agents.length-1];
-  const alts=(TEAM.alternates||[]).map((r,i)=>
-    `<div id="talt-${i}" style="font-size:13px;padding:9px 14px;border:1px dashed ${PIPB};color:${MUT};background:${PANEL};position:relative;z-index:2">${esc(r)}</div>`).join('');
-  const seams=TEAM.agents.slice(0,-1).map((a,i)=>
-    `<div id="seam-${i}" style="position:absolute;z-index:3;transform:translate(-50%,-50%);font-family:${MONO};font-size:11px;color:${MUT};border:1px dashed ${PIPB};background:${PANEL};padding:4px 12px;white-space:nowrap">${esc(a.produces)}</div>`).join('');
+  const squads=(TEAM.squads&&TEAM.squads.length)?TEAM.squads:[...new Set((TEAM.agents||[]).map(a=>a.squad||''))];
+  const groups=squads.map(sq=>({sq,members:(TEAM.agents||[]).map((a,i)=>({a,i})).filter(x=>(x.a.squad||'')===sq)}))
+                     .filter(g=>g.members.length);
+  const boxes=groups.map(g=>`
+    <div style="border:1px solid ${DIV};background:rgba(255,255,255,.012);padding:14px 16px 16px">
+      <div style="font-family:${MONO};font-size:10.5px;letter-spacing:2px;color:${DIM};margin-bottom:13px">${esc(String(g.sq||'TEAM').toUpperCase())}${g.sq?' SQUAD':''}</div>
+      <div style="display:flex;gap:30px;flex-wrap:wrap">${g.members.map(x=>teamNode(x.a,x.i)).join('')}</div>
+    </div>`).join('');
   return `<div id="teamModal" onclick="if(event.target.id==='teamModal')app.closeTeam()" style="position:fixed;inset:0;background:rgba(10,10,12,.82);backdrop-filter:blur(6px);z-index:50;display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;padding:40px 20px;font-family:'Space Grotesk',system-ui,sans-serif;font-size:17px;color:${INK}">
-  <div style="background:${PANEL};border:1px solid ${LINE};max-width:900px;width:100%;padding:30px 34px;position:relative">
+  <div style="background:${PANEL};border:1px solid ${LINE};max-width:960px;width:100%;padding:30px 34px;position:relative">
     <button onclick="app.closeTeam()" style="position:absolute;top:14px;right:14px;background:none;border:1px solid ${LINE};color:${MUT};font-size:15px;width:34px;height:34px;cursor:pointer" class="hv">✕</button>
     <div style="font-family:${MONO};font-size:12px;letter-spacing:3px;color:${LIME};margin-bottom:8px">AGENT TEAM · ORG CHART</div>
-    <h3 style="font-family:${UNB};font-weight:700;font-size:22px;margin:0">${esc(TEAM.name)}</h3>
-    <p style="font-size:14.5px;color:${MUT};margin:10px 0 26px;line-height:1.55;max-width:620px">${esc(TEAM.purpose)}</p>
-    <div id="chartWrap" style="position:relative;display:grid;grid-template-columns:1fr 265px;gap:36px;align-items:start">
+    <h3 style="font-family:${UNB};font-weight:700;font-size:22px;margin:0">${esc(TEAM.name||'')}</h3>
+    <p style="font-size:14.5px;color:${MUT};margin:10px 0 8px;line-height:1.55;max-width:660px">${esc(TEAM.purpose||'')}</p>
+    <div style="font-family:${MONO};font-size:11px;color:${DIM};margin-bottom:24px">${(TEAM.agents||[]).length} agents · ${groups.length} squads · click any node for its skill tree</div>
+    <div id="chartWrap" style="position:relative;display:flex;flex-direction:column;gap:44px">
       <svg id="chartSvg" style="position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none;overflow:visible">
         <defs>
           <marker id="arrLime" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0L10,5L0,10z" fill="${LIME}"/></marker>
-          <marker id="arrDim" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0L10,5L0,10z" fill="${DIM}"/></marker>
         </defs>
         <g id="chartLines"></g>
       </svg>
-      <div style="display:flex;flex-direction:column;align-items:center;gap:84px;padding:6px 0 10px">${chain}
-        <div id="tterm" style="font-family:${MONO};font-size:11px;color:${DIM};border:1px dashed ${PIPB};background:${PANEL};padding:5px 13px;position:relative;z-index:2">⦿ &nbsp;${esc(last.produces)}</div>
-      </div>
-      <div id="altCol" style="display:flex;flex-direction:column;gap:18px;padding-top:6px">
-        <div style="font-family:${MONO};font-size:11px;letter-spacing:2px;color:${DIM}">OFF-PATH ALTERNATES</div>
-        ${alts}
-      </div>
-      ${seams}
+      ${boxes}
     </div>
-    <div style="margin-top:26px;border-top:1px solid ${DIV};padding-top:16px;font-family:${MONO};font-size:11.5px;color:${AMBER};line-height:1.7">${esc(TEAM.honesty)}</div>
+    ${TEAM.execTrack?`<div style="margin-top:26px;font-family:${MONO};font-size:11.5px;color:${DIM};line-height:1.7">${esc(TEAM.execTrack)}</div>`:''}
+    <div style="margin-top:${TEAM.execTrack?'12px':'26px'};border-top:1px solid ${DIV};padding-top:16px;font-family:${MONO};font-size:11.5px;color:${AMBER};line-height:1.7">${esc(TEAM.honesty||'')}</div>
   </div>
 </div>`;
 }
@@ -618,26 +580,19 @@ function drawTeamLines(){
     return {x:r.left-W.left,y:r.top-W.top,w:r.width,h:r.height,
             cx:r.left-W.left+r.width/2,cy:r.top-W.top+r.height/2};};
   let paths='';
-  const n=TEAM.agents.length;
-  // main spine: node -> node, artifact chip centered on each connector
-  for(let i=0;i<n-1;i++){
-    const a=rel(document.getElementById('tnode-'+i)),b=rel(document.getElementById('tnode-'+(i+1)));
-    paths+=`<path d="M${a.cx},${a.y+a.h} L${b.cx},${b.y-2}" stroke="${DIM}" stroke-width="1.5" fill="none" marker-end="url(#arrLime)"/>`;
-    const chip=document.getElementById('seam-'+i);
-    if(chip){chip.style.left=a.cx+'px';chip.style.top=((a.y+a.h+b.y)/2)+'px';}
+  // pipeline order: straight arrow when the next node sits on the same row,
+  // bottom→top elbow when it starts a new row / squad box
+  for(let i=0;i<TEAM.agents.length-1;i++){
+    const A=document.getElementById('tnode-'+i),B=document.getElementById('tnode-'+(i+1));
+    if(!A||!B)continue;
+    const a=rel(A),b=rel(B);
+    if(Math.abs(a.cy-b.cy)<a.h/2&&b.x>a.x){
+      paths+=`<path d="M${a.x+a.w},${a.cy} L${b.x-3},${b.cy}" stroke="${DIM}" stroke-width="1.5" fill="none" marker-end="url(#arrLime)"/>`;
+    }else{
+      const midY=a.y+a.h+((b.y-(a.y+a.h))/2);
+      paths+=`<path d="M${a.cx},${a.y+a.h} L${a.cx},${midY} L${b.cx},${midY} L${b.cx},${b.y-3}" stroke="${DIM}" stroke-width="1.5" fill="none" marker-end="url(#arrLime)"/>`;
+    }
   }
-  // terminal deliverable stub off the last node
-  const lastN=rel(document.getElementById('tnode-'+(n-1))),term=document.getElementById('tterm');
-  if(term){const t=rel(term);
-    paths+=`<path d="M${lastN.cx},${lastN.y+lastN.h} L${t.cx},${t.y-2}" stroke="${DIM}" stroke-width="1.5" fill="none" marker-end="url(#arrLime)"/>`;}
-  // dashed elbows: anchor node -> off-path alternates
-  const ai=Math.max(0,TEAM.agents.findIndex(a=>a.anchor));
-  const src=rel(document.getElementById('tnode-'+ai));
-  (TEAM.alternates||[]).forEach((_,i)=>{
-    const alt=document.getElementById('talt-'+i);if(!alt)return;
-    const t=rel(alt),midX=src.x+src.w+((t.x-(src.x+src.w))/2);
-    paths+=`<path d="M${src.x+src.w},${src.cy} L${midX},${src.cy} L${midX},${t.cy} L${t.x-3},${t.cy}" stroke="${DIM}" stroke-width="1.2" stroke-dasharray="4 4" fill="none" marker-end="url(#arrDim)"/>`;
-  });
   g.innerHTML=paths;
 }
 

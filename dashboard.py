@@ -7,6 +7,54 @@ the design's scripted data — this script then just opens it as-is.
 import json, pathlib, re, webbrowser
 
 
+def build_team():
+    """Org-chart payload from data/demo_team.json + per-role skill trees from the xlsx.
+
+    Shared by real-mode injection (load_real) and the scripted-mode embed generator
+    (scratchpad gen script writes it into demo.html as TEAM_EMBED)."""
+    team_p = pathlib.Path("data/demo_team.json")
+    if not team_p.exists():
+        return None
+    d = json.load(open(team_p))["demo"]
+
+    def fmt_k(v):
+        return f"{v/1000:g}k" if v >= 1000 else str(v)
+
+    def skill_tree(role):
+        """Official per-role skills from the xlsx -> [[name, level, exec], ...]."""
+        try:
+            import framework
+            seen, ded = set(), []
+            for s in framework.get_skills(role):   # same role name can span sectors
+                if s["code"] not in seen:
+                    seen.add(s["code"]); ded.append(s)
+            exc = {x["code"] for x in framework.select_executable(ded, k=99)}
+            return [[s["skill"], s["required_level"], 1 if s["code"] in exc else 0]
+                    for s in ded]
+        except Exception:
+            return []
+
+    return {
+        "name": d["name"], "purpose": d["purpose"],
+        "squads": d.get("squads", []),
+        "execTrack": d.get("execution_track", ""),
+        "honesty": d.get("honesty_note", ""),
+        "agents": [{
+            "id": a["id"], "stage": a["stage"], "squad": a.get("squad", ""),
+            "role": a["role"], "anchor": bool(a.get("anchor")),
+            "execItems": len(a.get("battery_items", [])),
+            "enrich": (lambda e: f"{e['n_postings']} live posting"
+                       f"{'s' if e['n_postings'] != 1 else ''} · {e['n_tools']} tools"
+                       f" · matched via {e['matched_via']}")(a["enrichment_summary"]),
+            # per manifest salary_notes: lows/highs can be outliers — render median–high
+            "salary": (lambda b: f"S${fmt_k(b['median'])} – {fmt_k(b['high'])}")(
+                a["enrichment_summary"]["salary_band"]),
+            "produces": a.get("produces", ""),
+            "sk": skill_tree(a["role"]),
+        } for a in d["agents"]],
+    }
+
+
 def load_real():
     """Build the window.AP_REAL payload from run artifacts. None -> scripted mode."""
     p = pathlib.Path("output.json")
@@ -49,50 +97,11 @@ def load_real():
     except Exception:
         pass
 
-    team = None
-    team_p = pathlib.Path("data/demo_team.json")
-    if team_p.exists():                # org chart: fixed demo team manifest
-        d = json.load(open(team_p))["demo"]
-        def fmt_k(v):
-            return f"{v/1000:g}k" if v >= 1000 else str(v)
-
-        def skill_tree(role):
-            """Official per-role skills from the xlsx -> [[name, level, exec], ...]."""
-            try:
-                import framework
-                seen, ded = set(), []
-                for s in framework.get_skills(role):   # same role name can span sectors
-                    if s["code"] not in seen:
-                        seen.add(s["code"]); ded.append(s)
-                exc = {x["code"] for x in framework.select_executable(ded, k=99)}
-                return [[s["skill"], s["required_level"], 1 if s["code"] in exc else 0]
-                        for s in ded]
-            except Exception:
-                return []
-        team = {
-            "name": d["name"], "purpose": d["purpose"],
-            "alternates": d.get("off_path_alternates", []),
-            "honesty": d.get("honesty_note", ""),
-            "agents": [{
-                "id": a["id"], "stage": a["stage"], "role": a["role"],
-                "anchor": bool(a.get("anchor")),
-                "execItems": len(a.get("battery_items", [])),
-                "enrich": (lambda e: f"{e['n_postings']} live posting"
-                           f"{'s' if e['n_postings'] != 1 else ''} · {e['n_tools']} tools"
-                           f" · matched via {e['matched_via']}")(a["enrichment_summary"]),
-                # per manifest salary_note: low can be an outlier — render median–high
-                "salary": (lambda b: f"S${fmt_k(b['median'])} – {fmt_k(b['high'])}")(
-                    a["enrichment_summary"]["salary_band"]),
-                "produces": a.get("produces", ""), "consumes": a.get("consumes"),
-                "sk": skill_tree(a["role"]),
-            } for a in d["agents"]],
-        }
-
     return {"role": out["role"], "sector": out["sector"], "track": out.get("track", ""),
             "rounds": len(out["rounds"]),
             "totalSkills": len(first) + (len(rub["skills"]) if rub else 0),
             "batteryCount": len(first),
-            "skills": skills, "spec": spec, "salary": salary, "team": team}
+            "skills": skills, "spec": spec, "salary": salary, "team": build_team()}
 
 
 def main():
