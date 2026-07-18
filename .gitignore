@@ -1,0 +1,4 @@
+# Stand-alone scraper outputs (raw posting text — not committed)
+# A small sample fixture under data/fixtures/ IS committed for --dry-run.
+data/cache/
+data/role_enrichment.json
