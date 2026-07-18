@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AgentProof — Proving Ground</title>
+<style>
+  :root{
+    --bg:#0a0e13; --panel:#111823; --panel2:#0d141d; --line:#1d2735;
+    --ink:#e8eef5; --mut:#8b98a7; --dim:#5d6b7a;
+    --teal:#2dd4bf; --green:#28c76f; --amber:#f5a623; --red:#ef5350;
+    --blue:#4c93ff; --violet:#a78bfa;
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:radial-gradient(1200px 600px at 70% -10%,#12202e 0%,var(--bg) 55%);
+    color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;padding:26px}
+  .wrap{max-width:1120px;margin:0 auto}
+  .row{display:flex;gap:16px}
+  .col{display:flex;flex-direction:column;gap:16px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+  h1{font-size:19px;font-weight:600;margin:0;letter-spacing:.2px}
+  h2{font-size:12px;font-weight:600;margin:0 0 14px;color:var(--mut);text-transform:uppercase;letter-spacing:1.4px}
+  .sub{color:var(--mut);font-size:12.5px}
+  .mono{font-family:var(--mono)}
+
+  /* top bar */
+  .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+  .brand{display:flex;align-items:center;gap:12px}
+  .spark{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,var(--teal),var(--blue));
+    display:grid;place-items:center;font-weight:700;color:#04141a;font-size:17px}
+  .sponsors{display:flex;gap:8px}
+  .chip{font-size:11.5px;padding:6px 11px;border-radius:20px;border:1px solid var(--line);
+    color:var(--dim);background:var(--panel2);transition:.4s;display:flex;align-items:center;gap:6px}
+  .chip .dot{width:6px;height:6px;border-radius:50%;background:var(--dim);transition:.4s}
+  .chip.on{color:var(--ink);border-color:var(--teal)}
+  .chip.on .dot{background:var(--teal);box-shadow:0 0 9px var(--teal)}
+
+  /* role header */
+  .role-head{display:flex;align-items:center;justify-content:space-between;gap:18px}
+  .meta{display:flex;gap:22px;flex-wrap:wrap;margin-top:10px}
+  .meta div span{display:block}
+  .meta .k{font-size:10.5px;color:var(--dim);text-transform:uppercase;letter-spacing:1px}
+  .meta .v{font-size:14px;color:var(--ink);margin-top:3px;font-weight:500}
+  .salary .v{color:var(--teal)}
+
+  /* hero ring */
+  .hero{align-items:center;text-align:center;min-width:250px}
+  .ring{position:relative;width:190px;height:190px;margin:4px auto 8px}
+  .ring svg{transform:rotate(-90deg)}
+  .ring .big{position:absolute;inset:0;display:grid;place-items:center;flex-direction:column}
+  .ring .big b{font-size:46px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1}
+  .ring .big em{font-style:normal;font-size:11px;color:var(--mut);letter-spacing:1.5px;text-transform:uppercase;margin-top:6px}
+  .liftline{font-size:13px;color:var(--mut)}
+  .liftline b{color:var(--green);font-weight:600}
+  .rubricstat{margin-top:14px;padding-top:12px;border-top:1px solid var(--line);font-size:11.5px;color:var(--mut);width:100%}
+  .rubricstat b{color:var(--amber);font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;display:block;margin:5px 0 3px}
+  .rubricstat span{font-size:9.5px;color:var(--dim);font-family:var(--mono);display:block;line-height:1.5}
+  .neverblend{margin-top:11px;font-size:10px;color:var(--red);font-family:var(--mono)}
+
+  /* sandbox grid */
+  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+  .sbx{background:var(--panel2);border:1px solid var(--line);border-radius:11px;padding:12px 13px;
+    transition:.35s;position:relative;overflow:hidden}
+  .sbx.run{border-color:var(--blue)}
+  .sbx.pass{border-color:var(--green)}
+  .sbx .h{display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .sbx .name{font-size:12.5px;font-weight:600}
+  .sbx .lvl{font-size:10px;color:var(--dim);border:1px solid var(--line);border-radius:5px;padding:1px 6px}
+  .sbx .term{font-family:var(--mono);font-size:10.5px;color:var(--mut);margin-top:9px;min-height:30px;line-height:1.5}
+  .sbx .term .ok{color:var(--green)}
+  .sbx .term .warn{color:var(--amber)}
+  .sbx .stat{font-size:10.5px;margin-top:6px;color:var(--dim);display:flex;align-items:center;gap:6px}
+  .pulse{width:7px;height:7px;border-radius:50%;background:var(--blue);animation:p 1s infinite}
+  @keyframes p{0%,100%{opacity:.3}50%{opacity:1}}
+  .sweep::after{content:"";position:absolute;top:0;left:-40%;width:40%;height:100%;
+    background:linear-gradient(90deg,transparent,rgba(76,147,255,.14),transparent);animation:sw 1.1s infinite}
+  @keyframes sw{to{left:120%}}
+
+  /* skill bars */
+  .skill{margin-bottom:15px}
+  .skill:last-child{margin-bottom:0}
+  .skill .top{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px}
+  .skill .nm{font-size:13px;font-weight:500;display:flex;align-items:center;gap:8px}
+  .badge{font-size:9.5px;padding:2px 7px;border-radius:5px;font-weight:600;letter-spacing:.3px}
+  .badge.exec{background:rgba(40,199,111,.14);color:var(--green)}
+  .badge.rub{background:rgba(139,152,167,.14);color:var(--mut)}
+  .skill .pct{font-family:var(--mono);font-size:12.5px;color:var(--mut)}
+  .skill .pct b{color:var(--green)}
+  .track{height:9px;background:var(--panel2);border-radius:6px;position:relative;overflow:hidden}
+  .fill{position:absolute;top:0;left:0;height:100%;border-radius:6px;width:0;transition:width 1.1s cubic-bezier(.4,0,.2,1)}
+  .fill.base{background:var(--amber);opacity:.8}
+  .fill.ref{background:linear-gradient(90deg,var(--teal),var(--green))}
+  .ka{font-size:10.5px;color:var(--dim);margin-top:5px;font-style:italic}
+
+  /* career map */
+  .map{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .node{font-size:12px;padding:9px 13px;border-radius:9px;border:1px dashed var(--line);color:var(--mut)}
+  .node.cur{border-style:solid;border-color:var(--teal);color:var(--ink);background:rgba(45,212,191,.07);font-weight:600}
+  .arrow{color:var(--dim);font-size:15px}
+  .grp{font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:1px;margin-right:2px}
+
+  .foot{display:flex;align-items:center;justify-content:space-between;margin-top:18px}
+  .note{font-size:12px;color:var(--mut)}
+  .note b{color:var(--teal)}
+  button.replay{background:var(--panel);border:1px solid var(--line);color:var(--ink);
+    font-size:12.5px;padding:9px 16px;border-radius:9px;cursor:pointer;transition:.2s}
+  button.replay:hover{border-color:var(--teal);color:var(--teal)}
+  .stage{font-size:12px;color:var(--mut);min-height:16px;font-family:var(--mono)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <div class="brand">
+      <div class="spark">A</div>
+      <div>
+        <h1>AgentProof</h1>
+        <div class="sub">verified by execution, not by claim</div>
+      </div>
+    </div>
+    <div class="sponsors" id="sponsors">
+      <div class="chip" data-s="0"><span class="dot"></span>SkillsFuture</div>
+      <div class="chip" data-s="1"><span class="dot"></span>Oxylabs</div>
+      <div class="chip" data-s="2"><span class="dot"></span>Kimi</div>
+      <div class="chip" data-s="3"><span class="dot"></span>Daytona</div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:16px">
+    <div class="role-head">
+      <div>
+        <h1 style="font-size:17px">Data Analyst / Associate Data Engineer</h1>
+        <div class="meta">
+          <div><span class="k">Sector</span><span class="v">Infocomm Technology</span></div>
+          <div><span class="k">SSOC</span><span class="v mono">25131</span></div>
+          <div><span class="k">Official skills</span><span class="v">14 · 5 proven</span></div>
+          <div class="salary"><span class="k">Salary band · Oxylabs</span><span class="v mono">S$4.2k – 7.8k</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row" style="margin-bottom:16px">
+    <div class="card hero col">
+      <h2>✓ Execution-verified</h2>
+      <div class="ring">
+        <svg width="190" height="190" viewBox="0 0 190 190">
+          <circle cx="95" cy="95" r="82" fill="none" stroke="#182432" stroke-width="13"/>
+          <circle id="arc" cx="95" cy="95" r="82" fill="none" stroke="url(#g)" stroke-width="13"
+            stroke-linecap="round" stroke-dasharray="515" stroke-dashoffset="515"/>
+          <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#2dd4bf"/><stop offset="1" stop-color="#28c76f"/>
+          </linearGradient></defs>
+        </svg>
+        <div class="big"><b id="pctBig">0<small style="font-size:22px">%</small></b><em>executed</em></div>
+      </div>
+      <div class="liftline">baseline <span class="mono">58%</span> &nbsp;→&nbsp; <b id="liftTo">91%</b></div>
+      <div class="rubricstat">
+        ○ Rubric-assessed
+        <b id="rubBig">0%</b>
+        <span>23/38 K&amp;A items · LLM judge<br>NOT execution-verified</span>
+      </div>
+      <div class="neverblend">two numbers · never one blend</div>
+    </div>
+
+    <div class="card col" style="flex:1">
+      <h2>Daytona · sandboxes running in parallel</h2>
+      <div class="grid" id="grid"></div>
+      <div class="stage" id="stage" style="margin-top:14px"></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:16px">
+    <h2>Per-skill coverage · baseline → refined</h2>
+    <div id="skills"></div>
+  </div>
+
+  <div class="card">
+    <h2>Career map · Oxylabs</h2>
+    <div class="map">
+      <span class="grp">from</span>
+      <div class="node">Data / BI Analyst</div>
+      <span class="arrow">→</span>
+      <div class="node cur">Data Analyst / Assoc. Data Engineer</div>
+      <span class="arrow">→</span>
+      <div class="node">Senior Data Analyst</div>
+      <div class="node">Data Engineer</div>
+      <span class="grp" style="margin-left:8px">lateral</span>
+      <div class="node">BI Developer</div>
+      <div class="node">Data Scientist</div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <div class="note">every <b>✓ executed</b> bar = code <b>this generated agent</b> wrote that provably ran in a Daytona sandbox, graded against SkillsFuture's own K&amp;A rubric. <b>○ rubric</b> skills are judged, never executed — and we never blend the two.</div>
+    <button class="replay" onclick="run()">↻ replay</button>
+  </div>
+</div>
+
+<script>
+const SKILLS=[
+  {nm:"Data Engineering",lvl:"L2",exec:1,base:71,ref:96,ka:"clean data, merge disparate sources, run ETL"},
+  {nm:"Database Administration",lvl:"L2",exec:1,base:40,ref:88,ka:"write & optimise SQL, enforce integrity constraints"},
+  {nm:"Data Analytics",lvl:"L4",exec:1,base:32,ref:85,ka:"model relationships, validate statistical assumptions"},
+  {nm:"Data Visualisation",lvl:"L3",exec:1,base:58,ref:94,ka:"shape data behind the chart, pick honest encodings"},
+  {nm:"Stakeholder Management",lvl:"L2",exec:0,base:55,ref:70,ka:"rubric-only — scored against K&A checklist, not executed"}
+];
+const RUN=SKILLS.filter(s=>s.exec);
+const C=515, wait=t=>new Promise(r=>setTimeout(r,t));
+
+function build(){
+  const g=document.getElementById('grid');g.innerHTML='';
+  RUN.forEach((s,i)=>{
+    g.insertAdjacentHTML('beforeend',
+     `<div class="sbx" id="sb${i}">
+        <div class="h"><span class="name">${s.nm}</span><span class="lvl">${s.lvl}</span></div>
+        <div class="term" id="tm${i}">sandbox idle</div>
+        <div class="stat" id="st${i}"><span style="color:var(--dim)">queued</span></div>
+      </div>`);
+  });
+  const sk=document.getElementById('skills');sk.innerHTML='';
+  SKILLS.forEach((s,i)=>{
+    sk.insertAdjacentHTML('beforeend',
+     `<div class="skill">
+        <div class="top">
+          <span class="nm">${s.nm} <span class="lvl" style="color:var(--dim)">${s.lvl}</span>
+            <span class="badge ${s.exec?'exec':'rub'}">${s.exec?'✓ executed':'○ rubric'}</span></span>
+          <span class="pct"><span id="pb${i}">0</span>% → <b id="pr${i}">0</b>%</span>
+        </div>
+        <div class="track"><div class="fill base" id="fb${i}"></div><div class="fill ref" id="fr${i}"></div></div>
+        <div class="ka">${s.ka}</div>
+      </div>`);
+  });
+}
+
+function lightSponsors(){
+  const chips=document.querySelectorAll('.chip');
+  [0,1,2,3].forEach((s,i)=>setTimeout(()=>chips[s].classList.add('on'),i*380));
+}
+function countTo(el,to,ms,suffix){
+  const start=performance.now(),from=parseInt(el.textContent)||0;
+  function step(t){let k=Math.min(1,(t-start)/ms);let v=Math.round(from+(to-from)*(1-Math.pow(1-k,3)));
+    el.innerHTML=v+(suffix||'');if(k<1)requestAnimationFrame(step);}
+  requestAnimationFrame(step);
+}
+function ring(to){document.getElementById('arc').style.transition='stroke-dashoffset 1.3s cubic-bezier(.4,0,.2,1)';
+  document.getElementById('arc').style.strokeDashoffset=C-(C*to/100);}
+
+async function roundSandbox(useRef){
+  const proms=RUN.map(async(s,i)=>{
+    const sb=document.getElementById('sb'+i),tm=document.getElementById('tm'+i),st=document.getElementById('st'+i);
+    sb.className='sbx run sweep';st.innerHTML='<span class="pulse"></span> running in sandbox';
+    tm.innerHTML='$ python solve.py<br>› booting isolated sandbox…';
+    await wait(500+i*120);
+    tm.innerHTML='$ python solve.py<br>› executing agent code…';
+    await wait(600);
+    const score=useRef?s.ref:s.base;
+    sb.className='sbx pass';
+    tm.innerHTML='$ python solve.py<br><span class="'+(score>=70?'ok':'warn')+'">GRADE: '+(score>=70?'PASS':'PARTIAL')+' · '+score+'%</span>';
+    st.innerHTML='<span style="color:var(--green)">✓ sandbox exited 0</span>';
+  });
+  await Promise.all(proms);
+}
+
+async function fillBars(useRef){
+  SKILLS.forEach((s,i)=>{
+    if(useRef){document.getElementById('fr'+i).style.width=s.ref+'%';countTo(document.getElementById('pr'+i),s.ref,1100);}
+    else{document.getElementById('fb'+i).style.width=s.base+'%';countTo(document.getElementById('pb'+i),s.base,1100);}
+  });
+  await wait(1200);
+}
+
+async function run(){
+  build();
+  document.getElementById('arc').style.transition='none';
+  document.getElementById('arc').style.strokeDashoffset=C;
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));
+  document.getElementById('pctBig').innerHTML='0<small style="font-size:22px">%</small>';
+  document.getElementById('rubBig').textContent='0%';
+  const stage=document.getElementById('stage');
+
+  stage.textContent='› pulling official skills + K&A rubric (SkillsFuture) · market data (Oxylabs)…';
+  lightSponsors();
+  await wait(1700);
+
+  stage.textContent='› round 0 — generating agent spec v0, proving each skill in parallel…';
+  await roundSandbox(false);
+  await fillBars(false);
+  countTo(document.getElementById('pctBig'),58,900,'<small style="font-size:22px">%</small>');
+  countTo(document.getElementById('rubBig'),48,900,'%');
+  ring(58);
+  stage.innerHTML='› baseline — executed <b style="color:var(--amber)">58%</b> · rubric <b style="color:var(--amber)">48%</b> — 3 gaps found';
+  await wait(1400);
+
+  stage.textContent='› refining — rewriting the agent’s guidance from its own gaps, re-running…';
+  await wait(900);
+  await roundSandbox(true);
+  await fillBars(true);
+  countTo(document.getElementById('pctBig'),91,1100,'<small style="font-size:22px">%</small>');
+  countTo(document.getElementById('rubBig'),61,1100,'%');
+  ring(91);
+  stage.innerHTML='› executed <b style="color:var(--green)">91%</b> · rubric <b style="color:var(--amber)">61%</b> — same agent, gaps closed. spec saved to agent_final.md';
+}
+run();
+</script>
+</body>
+</html>

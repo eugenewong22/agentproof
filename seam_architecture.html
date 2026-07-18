@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AgentProof — how the agents actually work</title>
+<style>
+  :root{
+    --bg:#0a0e13; --panel:#111823; --panel2:#0d141d; --line:#1d2735;
+    --ink:#e8eef5; --mut:#8b98a7; --dim:#5d6b7a;
+    --teal:#2dd4bf; --green:#28c76f; --amber:#f5a623; --red:#ef5350;
+    --blue:#4c93ff; --violet:#a78bfa;
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:radial-gradient(1200px 600px at 70% -10%,#12202e 0%,var(--bg) 55%);
+    color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;padding:26px}
+  .wrap{max-width:1180px;margin:0 auto}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px;margin-bottom:16px}
+  h1{font-size:20px;font-weight:600;margin:0}
+  h2{font-size:12px;font-weight:600;margin:0 0 4px;color:var(--mut);text-transform:uppercase;letter-spacing:1.4px}
+  .sub{color:var(--mut);font-size:12.5px;margin:0 0 16px}
+  .mono{font-family:var(--mono)}
+  .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+  .brand{display:flex;align-items:center;gap:12px}
+  .spark{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,var(--teal),var(--blue));
+    display:grid;place-items:center;font-weight:700;color:#04141a;font-size:17px}
+
+  .tag{font-size:9.5px;font-weight:700;padding:3px 8px;border-radius:5px;letter-spacing:.6px;white-space:nowrap}
+  .tag.live{background:rgba(45,212,191,.15);color:var(--teal);border:1px solid rgba(45,212,191,.4)}
+  .tag.receipt{background:rgba(167,139,250,.15);color:var(--violet);border:1px solid rgba(167,139,250,.4)}
+  .tag.exec{background:rgba(40,199,111,.14);color:var(--green)}
+  .tag.rub{background:rgba(245,166,35,.14);color:var(--amber)}
+  .hd{display:flex;align-items:center;gap:10px;margin-bottom:2px}
+
+  /* flow strip */
+  .flow{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+  .fnode{flex:1;min-width:96px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;
+    padding:11px 9px;text-align:center;opacity:.25;transition:.45s}
+  .fnode.on{opacity:1;border-color:var(--teal)}
+  .fnode b{display:block;font-size:11.5px;font-weight:600;margin-bottom:3px}
+  .fnode span{font-size:9.5px;color:var(--dim);font-family:var(--mono)}
+  .fsep{color:var(--dim);font-size:14px}
+
+  /* identity swap */
+  .swap{display:grid;grid-template-columns:1fr auto 1fr;gap:16px;align-items:center}
+  .spec{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:12px;font-family:var(--mono);font-size:10.5px;line-height:1.65;color:var(--mut);white-space:pre-wrap;overflow-x:auto}
+  .spec .h{color:var(--teal);font-weight:700}
+  .spec .k{color:var(--violet)}
+  .swaparrow{text-align:center;font-size:10px;color:var(--dim);font-family:var(--mono);max-width:130px}
+  .swaparrow .big{font-size:22px;color:var(--teal);display:block;margin-bottom:4px}
+
+  /* sandbox lanes */
+  .lanes{display:grid;gap:10px}
+  .lane{background:var(--panel2);border:1px solid var(--line);border-radius:11px;padding:11px 13px;transition:.35s}
+  .lane.run{border-color:var(--blue)}
+  .lane.done{border-color:var(--green)}
+  .lane .lh{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
+  .lane .who{font-size:12.5px;font-weight:600;display:flex;align-items:center;gap:8px}
+  .sbid{font-size:9.5px;color:var(--dim);font-family:var(--mono)}
+  .cer{display:flex;gap:5px;flex-wrap:wrap}
+  .step{font-size:9px;font-family:var(--mono);padding:3px 7px;border-radius:4px;border:1px solid var(--line);
+    color:var(--dim);opacity:.4;transition:.3s}
+  .step.on{opacity:1;color:var(--teal);border-color:var(--teal)}
+  .step.done{opacity:1;color:var(--green);border-color:rgba(40,199,111,.4)}
+
+  /* seam */
+  .seam{display:grid;grid-template-columns:1fr 150px 1fr;gap:14px;align-items:center}
+  .box{background:var(--panel2);border:1px solid var(--line);border-radius:11px;padding:14px}
+  .box.a{border-color:rgba(76,147,255,.5)} .box.b{border-color:rgba(167,139,250,.5)}
+  .box .t{font-size:12.5px;font-weight:600;margin-bottom:6px}
+  .box .d{font-size:10.5px;color:var(--mut);font-family:var(--mono);line-height:1.6}
+  .wall{text-align:center}
+  .artifact{background:rgba(45,212,191,.1);border:1px dashed var(--teal);border-radius:8px;padding:8px;
+    font-family:var(--mono);font-size:9.5px;color:var(--teal);opacity:0;transform:translateX(-40px);transition:.9s}
+  .artifact.go{opacity:1;transform:translateX(0)}
+  .wall .note{font-size:9.5px;color:var(--dim);margin-top:8px;line-height:1.5}
+  .barrier{font-size:10px;color:var(--red);font-family:var(--mono);margin-top:6px}
+
+  /* two-track */
+  .tracks{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .track{background:var(--panel2);border:1px solid var(--line);border-radius:11px;padding:16px}
+  .track .n{font-size:34px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1;margin:8px 0 4px}
+  .track.e .n{color:var(--green)} .track.r .n{color:var(--amber)}
+  .track .cap{font-size:10.5px;color:var(--dim);font-family:var(--mono)}
+  .never{text-align:center;font-size:11.5px;color:var(--red);margin-top:12px;font-family:var(--mono)}
+
+  .foot{display:flex;align-items:center;justify-content:space-between;margin-top:6px}
+  .note{font-size:12px;color:var(--mut);max-width:800px;line-height:1.6}
+  .note b{color:var(--teal)}
+  button{background:var(--panel);border:1px solid var(--line);color:var(--ink);font-size:12.5px;
+    padding:9px 16px;border-radius:9px;cursor:pointer;transition:.2s}
+  button:hover{border-color:var(--teal);color:var(--teal)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <div class="brand">
+      <div class="spark">A</div>
+      <div>
+        <h1>How the agents actually work</h1>
+        <div class="sub" style="margin:0">AgentProof · Daytona HackSprint</div>
+      </div>
+    </div>
+    <button onclick="run()">↻ replay</button>
+  </div>
+
+  <div class="card">
+    <div class="hd"><h2>1 · the whole flow</h2><span class="tag live">LIVE TODAY</span></div>
+    <p class="sub">Role in, proven agent out. Every stage is day-of code.</p>
+    <div class="flow" id="flow">
+      <div class="fnode"><b>Role</b><span>SkillsFuture</span></div><span class="fsep">→</span>
+      <div class="fnode"><b>Skills + K&amp;A</b><span>framework.py</span></div><span class="fsep">→</span>
+      <div class="fnode"><b>Battery</b><span>battery.py</span></div><span class="fsep">→</span>
+      <div class="fnode"><b>Agent spec</b><span>agent.py</span></div><span class="fsep">→</span>
+      <div class="fnode"><b>Sandboxes</b><span>Daytona</span></div><span class="fsep">→</span>
+      <div class="fnode"><b>Gaps</b><span>gap.py</span></div><span class="fsep">→</span>
+      <div class="fnode"><b>Refine</b><span>refine.py</span></div><span class="fsep">→</span>
+      <div class="fnode"><b>Two-track</b><span>dashboard</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="hd"><h2>2 · what an outputted agent IS</h2><span class="tag live">LIVE TODAY</span></div>
+    <p class="sub">The deliverable isn't a description of the agent — it <em>is</em> the agent. The markdown becomes the system prompt. The thing graded is the thing you take away.</p>
+    <div class="swap">
+      <div class="spec">
+<span class="h"># Data Analyst / Assoc. Data Engineer</span>
+<span class="k">## Required competencies</span>
+- Data Engineering — L2 · ICT-DIT-2005-1.1
+- Database Administration — L2
+<span class="k">## Operating instructions</span>
+- Focus on messy inputs; flag ambiguity
+<span class="k">## Learned skill guidance</span>
+<span style="color:var(--dim)">(refine.py fills this)</span>
+      </div>
+      <div class="swaparrow">
+        <span class="big">→</span>
+        used verbatim as the<br><b style="color:var(--teal)">system prompt</b><br>
+        <span style="color:var(--dim)">candidate.py</span>
+      </div>
+      <div class="spec">
+<span class="h">$ sandbox · kimi</span>
+system: <span style="color:var(--teal)">&lt;the spec, verbatim&gt;</span>
+user:   solve(rows) — clean + merge
+        the two datasets…
+
+<span style="color:var(--green)">def solve(rows):</span>
+<span style="color:var(--green)">    ...</span>
+<span style="color:var(--green)">GRADE:{"score":0.96}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="hd"><h2>3 · one sandbox per skill · the lifecycle</h2><span class="tag live">LIVE TODAY</span></div>
+    <p class="sub">Each skill gets its own fresh, isolated Daytona sandbox, fanned out in parallel (MAX_PARALLEL 4). These six steps are the real lifecycle — each marks an actual state transition in <span class="mono">assess.py</span>.</p>
+    <div class="lanes" id="lanes"></div>
+  </div>
+
+  <div class="card">
+    <div class="hd"><h2>4 · the seam — how two agents hand off</h2><span class="tag receipt">PRODUCTION RECEIPT · NOT run today</span></div>
+    <p class="sub">The agents never talk to each other. Each runs in its own locked-down container, chained <em>only</em> by a validated JSON artifact. That's not a limitation — it's why the isolation claim holds.</p>
+    <div class="seam">
+      <div class="box a">
+        <div class="t">Agent A · Legal Reviewer</div>
+        <div class="d">container #1 · isolated<br>spec = system prompt<br><span style="color:var(--blue)">producer code</span> →<br>emits payment_terms[]</div>
+      </div>
+      <div class="wall">
+        <div class="artifact" id="art">ARTIFACT:{<br>&nbsp;"payment_terms":[…]<br>}<br><span style="color:var(--dim)">validated JSON</span></div>
+        <div class="barrier">╎ no network ╎</div>
+        <div class="note">containers never<br>communicate — chained<br>only by the artifact</div>
+      </div>
+      <div class="box b">
+        <div class="t">Agent B · Data Analyst</div>
+        <div class="d">container #2 · isolated<br>spec = system prompt<br><span style="color:var(--violet)">consumer code</span> ←<br>consumes THAT artifact</div>
+      </div>
+    </div>
+    <div style="margin-top:16px;padding:12px;background:var(--panel2);border:1px solid var(--line);border-left:3px solid var(--amber);border-radius:0 8px 8px 0">
+      <div style="font-size:11.5px;color:var(--mut);line-height:1.65">
+        <b style="color:var(--amber)">The honesty line — say it exactly this way.</b><br>
+        The seam is <b style="color:var(--ink)">exercised</b>: A really ran and produced the artifact, B really consumed it and produced a deliverable. That chain is the real integration signal.
+        But the <b style="color:var(--ink)">score</b> is an LLM judge over K&amp;A-grounded acceptance criteria — so it is
+        <span class="tag rub">○ RUBRIC-ASSESSED · NOT execution-verified</span>
+        and it is <b style="color:var(--red)">never blended</b> into the executed number. Failing seams retry, then escalate to the Lead.
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="hd"><h2>5 · the two-track scorecard</h2><span class="tag live">LIVE TODAY</span></div>
+    <p class="sub">A single blended number silently fabricates 100% for roles with few executable skills. Production caught that live. So: two numbers, always.</p>
+    <div class="tracks">
+      <div class="track e">
+        <span class="tag exec">✓ EXECUTION-VERIFIED</span>
+        <div class="n" id="n1">0%</div>
+        <div class="cap">14/16 level-points · ran in a Daytona sandbox</div>
+      </div>
+      <div class="track r">
+        <span class="tag rub">○ RUBRIC-ASSESSED</span>
+        <div class="n" id="n2">0%</div>
+        <div class="cap">23/38 K&amp;A items · LLM judge, NOT executed</div>
+      </div>
+    </div>
+    <div class="never">two numbers · never one blend</div>
+  </div>
+
+  <div class="foot">
+    <div class="note">Everything badged <b>LIVE TODAY</b> is Saturday's build — one role, proven live. The seam is our <b>production build</b>: exercised in real sandboxes, rubric-scored, badged as such. Not a promise — a receipt.</div>
+  </div>
+</div>
+
+<script>
+const LANES=[
+  {who:"Data Engineering",lvl:"L2",sb:"sbx-a41f"},
+  {who:"Database Administration",lvl:"L2",sb:"sbx-b7c2"},
+  {who:"Data Analytics",lvl:"L4",sb:"sbx-c93d"},
+  {who:"Data Visualisation",lvl:"L3",sb:"sbx-d18e"}
+];
+const CER=["spawn","assign","execute","grade","report","teardown"];
+const wait=t=>new Promise(r=>setTimeout(r,t));
+
+function build(){
+  const el=document.getElementById('lanes'); el.innerHTML='';
+  LANES.forEach((l,i)=>{
+    el.insertAdjacentHTML('beforeend',
+     `<div class="lane" id="ln${i}">
+        <div class="lh">
+          <span class="who">${l.who} <span class="sbid">${l.lvl}</span></span>
+          <span class="sbid" id="sb${i}">${l.sb} · idle</span>
+        </div>
+        <div class="cer">${CER.map((c,j)=>`<span class="step" id="s${i}_${j}">${c}</span>`).join('')}</div>
+      </div>`);
+  });
+}
+
+function countTo(el,to,ms){
+  const s=performance.now(),from=parseInt(el.textContent)||0;
+  function step(t){const k=Math.min(1,(t-s)/ms);
+    el.textContent=Math.round(from+(to-from)*(1-Math.pow(1-k,3)))+'%';
+    if(k<1)requestAnimationFrame(step);}
+  requestAnimationFrame(step);
+}
+
+async function runLane(i){
+  const lane=document.getElementById('ln'+i), sb=document.getElementById('sb'+i);
+  lane.className='lane run';
+  for(let j=0;j<CER.length;j++){
+    const st=document.getElementById(`s${i}_${j}`);
+    st.className='step on';
+    if(j===0) sb.textContent=LANES[i].sb+' · booting';
+    if(j===2) sb.textContent=LANES[i].sb+' · executing';
+    if(j===3) sb.textContent=LANES[i].sb+' · GRADE:0.9';
+    if(j===5) sb.textContent=LANES[i].sb+' · exited 0';
+    await wait(260+Math.random()*140);
+    st.className='step done';
+  }
+  lane.className='lane done';
+}
+
+async function run(){
+  build();
+  document.querySelectorAll('.fnode').forEach(n=>n.classList.remove('on'));
+  document.getElementById('art').classList.remove('go');
+  document.getElementById('n1').textContent='0%';
+  document.getElementById('n2').textContent='0%';
+
+  const nodes=document.querySelectorAll('.fnode');
+  for(const n of nodes){ n.classList.add('on'); await wait(230); }
+  await wait(300);
+
+  await Promise.all(LANES.map((_,i)=>runLane(i)));
+  await wait(400);
+
+  document.getElementById('art').classList.add('go');
+  await wait(900);
+
+  countTo(document.getElementById('n1'),88,1100);
+  countTo(document.getElementById('n2'),61,1100);
+}
+run();
+</script>
+</body>
+</html>
