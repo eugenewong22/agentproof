@@ -1,0 +1,105 @@
+{
+  "demo": {
+    "name": "Data pipeline team — fixed demo path",
+    "purpose": "One deterministic route for the demo. No role resolution / fuzzy matching at demo time; the pipeline reads this manifest and runs exactly these agents in this order.",
+    "sector": "Infocomm Technology",
+    "track": "Data and Artificial Intelligence",
+    "enrichment_source": "data/role_enrichment.json",
+    "battery_source": "data/battery_seed.json",
+    "path": [
+      "data-engineer",
+      "data-analyst",
+      "data-scientist"
+    ],
+    "agents": [
+      {
+        "id": "data-engineer",
+        "stage": 1,
+        "role": "Data Engineer",
+        "enrichment_key": "Data Engineer",
+        "enrichment_summary": {
+          "n_postings": 2,
+          "n_tools": 12,
+          "n_duties": 8,
+          "matched_via": "tfidf",
+          "salary_band": {
+            "low": 4000,
+            "median": 5750,
+            "high": 12000,
+            "currency": "SGD"
+          }
+        },
+        "battery_items": [
+          {
+            "skill": "Data Engineering",
+            "required_level": 2,
+            "code": "ICT-DIT-2005-1.1"
+          }
+        ],
+        "produces": "clean, validated dataset artifact",
+        "consumes": null
+      },
+      {
+        "id": "data-analyst",
+        "stage": 2,
+        "role": "Data Analyst / Associate Data Engineer",
+        "anchor": true,
+        "enrichment_key": "Data Analyst / Associate Data Engineer",
+        "enrichment_summary": {
+          "n_postings": 2,
+          "n_tools": 12,
+          "n_duties": 8,
+          "matched_via": "tfidf+ssoc",
+          "salary_band": {
+            "low": 800,
+            "median": 2800,
+            "high": 5500,
+            "currency": "SGD"
+          }
+        },
+        "battery_items": [
+          {
+            "skill": "Database Administration",
+            "required_level": 2,
+            "code": "ICT-OUS-2006-1.1"
+          },
+          {
+            "skill": "Data Analytics",
+            "required_level": 2,
+            "code": "ICT-BIN-2104-1.1"
+          }
+        ],
+        "produces": "analysis / dashboard deliverable",
+        "consumes": "data-engineer"
+      },
+      {
+        "id": "data-scientist",
+        "stage": 3,
+        "role": "Data Scientist / Artificial Intelligence Scientist",
+        "enrichment_key": "Data Scientist / Artificial Intelligence Scientist",
+        "enrichment_summary": {
+          "n_postings": 1,
+          "n_tools": 12,
+          "n_duties": 4,
+          "matched_via": "tfidf+ssoc",
+          "salary_band": {
+            "low": 7000,
+            "median": 9750,
+            "high": 12500,
+            "currency": "SGD"
+          }
+        },
+        "battery_items": [],
+        "battery_note": "rubric-only — no seed item; badge 'NOT execution-verified' (BUILD_GUIDE §0.5 two-track honesty)",
+        "produces": "model / insight deliverable",
+        "consumes": "data-analyst"
+      }
+    ],
+    "off_path_alternates": [
+      "Data Architect",
+      "Chief Data Officer / Chief Artificial Intelligence Officer"
+    ],
+    "salary_note": "Anchor role salary low=800 is an internship outlier; render median/high only (median 2800 / high 5500 SGD).",
+    "honesty_note": "Seams are EXERCISED (stage N consumes stage N-1's real artifact in separate sandboxes) but rubric-assessed, not execution-verified — never blended into the executed number (§7.5)."
+  }
+}
