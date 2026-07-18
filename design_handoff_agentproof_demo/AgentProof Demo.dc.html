@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="theme-color" content="#0A0A0C">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;900&amp;family=Space+Grotesk:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+html,body{margin:0;padding:0;background:#0A0A0C}
+a{color:#C8F135;text-decoration:none}a:hover{color:#E2FF7A}
+::selection{background:#C8F135;color:#0A0A0C}
+button{font-family:inherit}
+textarea{font-family:inherit}
+@keyframes ap-pulse{0%,100%{opacity:.25}50%{opacity:1}}
+@keyframes ap-sweep{from{left:-45%}to{left:125%}}
+@keyframes ap-glow{0%,100%{box-shadow:0 0 0 rgba(200,241,53,0)}50%{box-shadow:0 0 26px rgba(200,241,53,.35)}}
+</style>
+</helmet>
+<div style="min-height:100vh;background:#0A0A0C;color:#F4F3EE;font-family:'Space Grotesk',system-ui,sans-serif;font-size:17px">
+
+<header style="display:flex;align-items:center;justify-content:space-between;gap:14px 24px;flex-wrap:wrap;padding:16px 44px;border-bottom:1px solid #232328;position:sticky;top:0;background:rgba(10,10,12,.94);backdrop-filter:blur(8px);z-index:10">
+  <div style="display:flex;align-items:center;gap:14px">
+    <div style="width:38px;height:38px;background:#C8F135;color:#0A0A0C;display:grid;place-items:center;font-family:'Unbounded',sans-serif;font-weight:900;font-size:18px">A</div>
+    <div>
+      <div style="font-family:'Unbounded',sans-serif;font-weight:700;font-size:15px;letter-spacing:.6px">AGENTPROOF</div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#9C9BA0;letter-spacing:.4px">verified by execution, not by claim</div>
+    </div>
+  </div>
+  <nav style="display:flex;gap:6px">
+    <sc-for list="{{ rail }}" as="rl" hint-placeholder-count="4">
+      <button onClick="{{ rl.go }}" style="background:none;border:1px solid {{ rl.bc }};color:{{ rl.c }};font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:1px;padding:8px 14px;cursor:pointer">{{ rl.num }} {{ rl.label }}</button>
+    </sc-for>
+  </nav>
+  <div style="display:flex;gap:7px;flex-wrap:wrap">
+    <sc-for list="{{ sponsors }}" as="ch" hint-placeholder-count="5">
+      <div style="display:flex;align-items:center;gap:7px;padding:7px 12px;border:1px solid {{ ch.bc }};color:{{ ch.tc }};font-family:'IBM Plex Mono',monospace;font-size:11.5px;border-radius:999px;background:#0E0E11;transition:all .4s">
+        <span style="width:6px;height:6px;border-radius:50%;background:{{ ch.dc }};box-shadow:{{ ch.sh }};transition:all .4s"></span>{{ ch.name }}
+      </div>
+    </sc-for>
+  </div>
+</header>
+
+<sc-if value="{{ isRequest }}" hint-placeholder-val="{{ true }}">
+<section data-screen-label="01 Request" style="max-width:1240px;margin:0 auto;padding:64px 44px;display:grid;grid-template-columns:1.05fr .95fr;gap:64px;align-items:start">
+  <div style="display:flex;flex-direction:column;gap:26px;padding-top:20px">
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:3px;color:#C8F135">01 · REQUEST AN AGENT</div>
+    <h1 style="font-family:'Unbounded',sans-serif;font-weight:900;font-size:52px;line-height:1.08;margin:0;letter-spacing:-.5px">HIRE AN AGENT.<br>WATCH IT<br><span style="color:#C8F135">PROVE ITSELF.</span></h1>
+    <p style="font-size:20px;line-height:1.55;color:#9C9BA0;max-width:520px;margin:0;text-wrap:pretty">Pick a real SkillsFuture role. AgentProof generates that role's skill battery, benchmarks the agent by <b style="color:#F4F3EE">executing its work</b> in isolated Daytona sandboxes, then refines it until the gaps close.</p>
+    <div style="display:flex;gap:26px;font-family:'IBM Plex Mono',monospace;font-size:13px;color:#5F5F66">
+      <span><b style="color:#F4F3EE">1,977</b> official roles</span>
+      <span><b style="color:#F4F3EE">0</b> invented skills</span>
+      <span><b style="color:#C8F135">100%</b> of green bars ran as code</span>
+    </div>
+  </div>
+  <div style="background:#131316;border:1px solid #232328;padding:30px 32px;display:flex;flex-direction:column;gap:22px">
+    <div style="display:flex;gap:8px">
+      <div style="flex:1;text-align:center;padding:11px;border:1px solid #C8F135;color:#C8F135;font-family:'IBM Plex Mono',monospace;font-size:13px;background:rgba(200,241,53,.07)">● I know the role</div>
+      <div style="flex:1;text-align:center;padding:11px;border:1px solid #232328;color:#5F5F66;font-family:'IBM Plex Mono',monospace;font-size:13px">○ Describe the task</div>
+    </div>
+    <div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;letter-spacing:2px;color:#5F5F66;margin-bottom:10px">ROLE · SKILLSFUTURE OFFICIAL</div>
+      <div style="border:1px solid #2E3A16;background:rgba(200,241,53,.05);padding:18px 20px">
+        <div style="font-size:21px;font-weight:700">Data Analyst / Associate Data Engineer</div>
+        <div style="display:flex;gap:24px;margin-top:12px;flex-wrap:wrap">
+          <div><div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:1px;color:#5F5F66">SECTOR</div><div style="font-size:15px;margin-top:2px">Infocomm Technology</div></div>
+          <div><div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:1px;color:#5F5F66">SSOC</div><div style="font-size:15px;margin-top:2px;font-family:'IBM Plex Mono',monospace">25131</div></div>
+          <div><div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:1px;color:#5F5F66">OFFICIAL SKILLS</div><div style="font-size:15px;margin-top:2px">14 · 6 in battery</div></div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;letter-spacing:2px;color:#5F5F66;margin-bottom:10px">CUSTOM INSTRUCTIONS</div>
+      <textarea value="{{ instr }}" onChange="{{ onInstr }}" rows="3" style="width:100%;box-sizing:border-box;background:#0E0E11;border:1px solid #232328;color:#F4F3EE;font-size:15px;padding:14px 16px;resize:vertical;outline:none;line-height:1.5"></textarea>
+    </div>
+    <button onClick="{{ goLoadout }}" style="background:#C8F135;color:#0A0A0C;border:none;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:18px;padding:17px;cursor:pointer;letter-spacing:.3px">Next · Skill loadout →</button>
+  </div>
+</section>
+</sc-if>
+
+<sc-if value="{{ isLoadout }}" hint-placeholder-val="{{ false }}">
+<section data-screen-label="02 Skill Loadout" style="max-width:1240px;margin:0 auto;padding:48px 44px">
+  <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap;margin-bottom:30px">
+    <div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:3px;color:#C8F135;margin-bottom:10px">02 · SKILL LOADOUT</div>
+      <h2 style="font-family:'Unbounded',sans-serif;font-weight:700;font-size:30px;margin:0">Data Analyst / Assoc. Data Engineer</h2>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:#5F5F66;margin-top:8px">◆ official required level is free · pushing above it spends proof budget · L0 drops the skill</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px;align-items:flex-end">
+      <div style="display:flex;gap:8px">
+        <button onClick="{{ presetBaseline }}" style="background:none;border:1px solid #232328;color:#9C9BA0;font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:1px;padding:9px 16px;cursor:pointer" style-hover="border-color:#C8F135;color:#C8F135">BASELINE</button>
+        <button onClick="{{ presetSpecialize }}" style="background:none;border:1px solid #232328;color:#9C9BA0;font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:1px;padding:9px 16px;cursor:pointer" style-hover="border-color:#C8F135;color:#C8F135">SPECIALIZE</button>
+        <button onClick="{{ presetMax }}" style="background:none;border:1px solid #232328;color:#9C9BA0;font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:1px;padding:9px 16px;cursor:pointer" style-hover="border-color:#C8F135;color:#C8F135">MAX</button>
+      </div>
+      <sc-if value="{{ showBudget }}" hint-placeholder-val="{{ true }}">
+      <div style="display:flex;align-items:center;gap:14px;border:1px solid #232328;background:#0E0E11;padding:11px 16px">
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:2px;color:#5F5F66">PROOF BUDGET</span>
+        <div style="display:flex;gap:4px">
+          <sc-for list="{{ meter }}" as="mb" hint-placeholder-count="8">
+            <div style="width:13px;height:20px;background:{{ mb.bg }};border:1px solid {{ mb.bc }};transition:all .25s"></div>
+          </sc-for>
+        </div>
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:13.5px;color:{{ budgetC }}">{{ budgetTxt }}</span>
+      </div>
+      </sc-if>
+    </div>
+  </div>
+
+  <div style="background:#131316;border:1px solid #232328;padding:10px 32px 14px">
+    <sc-for list="{{ loadoutRows }}" as="row" hint-placeholder-count="6">
+      <div style="display:grid;grid-template-columns:34px 1fr auto 160px;gap:22px;align-items:center;padding:17px 0;border-bottom:1px solid #1A1A1E;opacity:{{ row.op }};transition:opacity .25s">
+        <button onClick="{{ row.toggle }}" style="width:26px;height:26px;border:1px solid {{ row.tb }};background:{{ row.tbg }};color:#0A0A0C;font-size:15px;font-weight:700;cursor:pointer;display:grid;place-items:center;padding:0">{{ row.tick }}</button>
+        <div>
+          <div style="display:flex;align-items:center;gap:10px;font-size:17.5px;font-weight:600">{{ row.nm }}
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;padding:3px 8px;background:{{ row.badgeBg }};color:{{ row.badgeC }}">{{ row.badge }}</span>
+          </div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#5F5F66;margin-top:5px">{{ row.ka }}</div>
+        </div>
+        <div style="display:flex;gap:7px">
+          <sc-for list="{{ row.pips }}" as="pip" hint-placeholder-count="6">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:3px">
+              <button onClick="{{ pip.set }}" title="L{{ pip.l }}" style="width:32px;height:23px;border:1px solid {{ pip.bc }};background:{{ pip.bg }};cursor:pointer;padding:0;transition:all .15s"></button>
+              <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#C8F135;height:12px;line-height:12px">{{ pip.mark }}</span>
+            </div>
+          </sc-for>
+        </div>
+        <div style="text-align:right">
+          <div style="font-family:'Unbounded',sans-serif;font-weight:700;font-size:19px;color:{{ row.lvlC }}">{{ row.lvlTxt }}</div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:{{ row.noteC }};margin-top:3px">{{ row.note }}</div>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:24px;margin-top:26px;flex-wrap:wrap">
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:#5F5F66;line-height:1.7">✓ execution-verified = the agent's code runs in a Daytona sandbox<br>○ rubric only = LLM-judged against the K&amp;A checklist — never blended with executed scores</div>
+    <button onClick="{{ generate }}" disabled="{{ genDisabled }}" style="background:{{ genBg }};color:#0A0A0C;border:none;font-weight:700;font-size:19px;padding:18px 40px;cursor:pointer;animation:ap-glow 2.2s infinite">Generate agent →</button>
+  </div>
+</section>
+</sc-if>
+
+<sc-if value="{{ isProve }}" hint-placeholder-val="{{ false }}">
+<section data-screen-label="03 Build and Prove" style="max-width:1240px;margin:0 auto;padding:44px 44px 64px">
+  <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin-bottom:26px;flex-wrap:wrap">
+    <div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:3px;color:#C8F135;margin-bottom:10px">03 · BUILD &amp; PROVE</div>
+      <h2 style="font-family:'Unbounded',sans-serif;font-weight:700;font-size:30px;margin:0">The proving ground</h2>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button onClick="{{ replay }}" style="background:none;border:1px solid #232328;color:#9C9BA0;font-family:'IBM Plex Mono',monospace;font-size:13px;padding:12px 20px;cursor:pointer" style-hover="border-color:#C8F135;color:#C8F135">↻ replay</button>
+      <sc-if value="{{ runDone }}" hint-placeholder-val="{{ false }}">
+        <button onClick="{{ goDeliver }}" style="background:#C8F135;color:#0A0A0C;border:none;font-weight:700;font-size:16px;padding:12px 28px;cursor:pointer;animation:ap-glow 1.8s infinite">View the scorecard →</button>
+      </sc-if>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 340px;gap:16px;margin-bottom:16px">
+    <div style="background:#131316;border:1px solid #232328;padding:24px 28px">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;letter-spacing:2px;color:#5F5F66;margin-bottom:18px">PIPELINE</div>
+      <div style="display:flex;flex-direction:column;gap:13px">
+        <sc-for list="{{ steps }}" as="st" hint-placeholder-count="5">
+          <div style="display:flex;align-items:center;gap:14px">
+            <span style="width:22px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:15px;color:{{ st.ic }}">{{ st.icon }}</span>
+            <span style="font-size:16.5px;color:{{ st.c }};flex:1">{{ st.t }}</span>
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:#5F5F66">{{ st.s }}</span>
+          </div>
+        </sc-for>
+      </div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:13.5px;color:#C8F135;margin-top:20px;min-height:20px;border-top:1px solid #1A1A1E;padding-top:16px">{{ stage }}<span style="animation:ap-pulse .9s infinite">▌</span></div>
+    </div>
+    <div style="background:#131316;border:1px solid #232328;padding:24px 28px;display:flex;flex-direction:column;justify-content:center;gap:6px;text-align:center">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;letter-spacing:2px;color:#5F5F66">✓ EXECUTED</div>
+      <div style="font-family:'Unbounded',sans-serif;font-weight:900;font-size:76px;line-height:1;color:{{ execC }}">{{ execPct }}<span style="font-size:30px">%</span></div>
+      <div style="border-top:1px solid #1A1A1E;margin-top:12px;padding-top:12px">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:2px;color:#5F5F66">○ RUBRIC-ASSESSED</div>
+        <div style="font-family:'Unbounded',sans-serif;font-weight:700;font-size:30px;color:#F5B83D;margin-top:4px">{{ rubPct }}%</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:#5F5F66;margin-top:5px">LLM judge · two numbers, never one blend</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="background:#131316;border:1px solid #232328;padding:24px 28px;margin-bottom:16px">
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;letter-spacing:2px;color:#5F5F66;margin-bottom:16px">DAYTONA · ISOLATED SANDBOXES IN PARALLEL</div>
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px">
+      <sc-for list="{{ sbx }}" as="sb" hint-placeholder-count="4">
+        <div style="position:relative;overflow:hidden;background:#0E0E11;border:1px solid {{ sb.bc }};padding:15px 18px;transition:border-color .35s">
+          <sc-if value="{{ sb.running }}" hint-placeholder-val="{{ false }}">
+            <div style="position:absolute;top:0;left:-45%;width:45%;height:100%;background:linear-gradient(90deg,transparent,rgba(200,241,53,.09),transparent);animation:ap-sweep 1.1s linear infinite"></div>
+          </sc-if>
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+            <span style="font-weight:600;font-size:16px">{{ sb.nm }}</span>
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:#5F5F66;border:1px solid #232328;padding:2px 8px">{{ sb.lvl }}</span>
+          </div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:#9C9BA0;margin-top:10px;line-height:1.6;min-height:42px">
+            <div>$ python solve.py</div>
+            <div style="color:{{ sb.t2c }}">{{ sb.t2 }}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:{{ sb.statc }};margin-top:8px">
+            <sc-if value="{{ sb.running }}" hint-placeholder-val="{{ false }}"><span style="width:8px;height:8px;border-radius:50%;background:#C8F135;animation:ap-pulse 1s infinite"></span></sc-if>
+            {{ sb.stat }}
+          </div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="background:#131316;border:1px solid #232328;padding:24px 28px">
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;letter-spacing:2px;color:#5F5F66;margin-bottom:8px">PER-SKILL COVERAGE · BASELINE → REFINED</div>
+    <sc-for list="{{ barRows }}" as="r" hint-placeholder-count="5">
+      <div style="display:flex;flex-direction:column;gap:8px;padding:13px 0;border-bottom:1px solid #1A1A1E">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px">
+          <span style="display:flex;align-items:center;gap:10px;font-size:16.5px;font-weight:600">{{ r.nm }}
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:#5F5F66">{{ r.lvl }}</span>
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;padding:3px 8px;background:{{ r.badgeBg }};color:{{ r.badgeC }}">{{ r.badge }}</span>
+          </span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:15px;color:#9C9BA0">{{ r.pbTxt }} → <b style="color:#C8F135">{{ r.prTxt }}</b></span>
+        </div>
+        <div style="height:12px;background:#0E0E11;border:1px solid #1E1E23;position:relative;overflow:hidden">
+          <div style="position:absolute;top:0;bottom:0;left:0;width:{{ r.wb }}%;background:#F5B83D;opacity:.7;transition:width 1.1s cubic-bezier(.4,0,.2,1)"></div>
+          <div style="position:absolute;top:0;bottom:0;left:0;width:{{ r.wr }}%;background:linear-gradient(90deg,#8CC63F,#C8F135);transition:width 1.1s cubic-bezier(.4,0,.2,1)"></div>
+        </div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#5F5F66">{{ r.ka }}</div>
+      </div>
+    </sc-for>
+  </div>
+</section>
+</sc-if>
+
+<sc-if value="{{ isDeliver }}" hint-placeholder-val="{{ false }}">
+<section data-screen-label="04 Delivered" style="max-width:1240px;margin:0 auto;padding:48px 44px 64px">
+  <div style="font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:3px;color:#C8F135;margin-bottom:10px">04 · DELIVERED</div>
+  <h2 style="font-family:'Unbounded',sans-serif;font-weight:700;font-size:30px;margin:0 0 34px">Data Analyst / Assoc. Data Engineer</h2>
+
+  <div style="display:grid;grid-template-columns:1fr 340px;gap:16px;margin-bottom:16px">
+    <div style="background:#131316;border:1px solid #232328;padding:34px 38px;display:flex;align-items:flex-end;gap:30px;flex-wrap:wrap">
+      <div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;letter-spacing:2px;color:#5F5F66;margin-bottom:8px">BASELINE</div>
+        <div style="font-family:'Unbounded',sans-serif;font-weight:700;font-size:66px;color:#5F5F66;line-height:1">{{ execBase }}%</div>
+      </div>
+      <div style="font-size:44px;color:#C8F135;padding-bottom:6px">→</div>
+      <div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;letter-spacing:2px;color:#C8F135;margin-bottom:8px">REFINED · EXECUTION-VERIFIED</div>
+        <div style="font-family:'Unbounded',sans-serif;font-weight:900;font-size:112px;color:#C8F135;line-height:1">{{ execRef }}%</div>
+      </div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:#9C9BA0;padding-bottom:10px">+{{ lift }} pts lift<br>one refine pass</div>
+    </div>
+    <div style="background:#131316;border:1px solid #232328;padding:26px 28px;display:flex;flex-direction:column;justify-content:center;gap:8px;text-align:center">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:2px;color:#5F5F66">○ RUBRIC-ASSESSED</div>
+      <div style="font-family:'Unbounded',sans-serif;font-weight:700;font-size:38px;color:#F5B83D">{{ rubBase }}% → {{ rubRef }}%</div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#5F5F66;line-height:1.7">K&amp;A checklist · LLM judge<br>NOT execution-verified</div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#FF6459;margin-top:6px">two numbers · never one blend</div>
+    </div>
+  </div>
+
+  <div style="background:#131316;border:1px solid #232328;padding:24px 28px;margin-bottom:16px">
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;letter-spacing:2px;color:#5F5F66;margin-bottom:8px">SCORECARD · EVERY GREEN BAR RAN AS CODE IN A DAYTONA SANDBOX</div>
+    <sc-for list="{{ finalRows }}" as="r" hint-placeholder-count="5">
+      <div style="display:flex;flex-direction:column;gap:8px;padding:13px 0;border-bottom:1px solid #1A1A1E">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px">
+          <span style="display:flex;align-items:center;gap:10px;font-size:16.5px;font-weight:600">{{ r.nm }}
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:#5F5F66">{{ r.lvl }}</span>
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;padding:3px 8px;background:{{ r.badgeBg }};color:{{ r.badgeC }}">{{ r.badge }}</span>
+          </span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:15px;color:#9C9BA0">{{ r.pbTxt }} → <b style="color:#C8F135">{{ r.prTxt }}</b></span>
+        </div>
+        <div style="height:12px;background:#0E0E11;border:1px solid #1E1E23;position:relative;overflow:hidden">
+          <div style="position:absolute;top:0;bottom:0;left:0;width:{{ r.wb }}%;background:#F5B83D;opacity:.7"></div>
+          <div style="position:absolute;top:0;bottom:0;left:0;width:{{ r.wr }}%;background:linear-gradient(90deg,#8CC63F,#C8F135)"></div>
+        </div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#5F5F66">{{ r.ka }}</div>
+      </div>
+    </sc-for>
+  </div>
+
+  <div style="display:grid;grid-template-columns:300px 1fr;gap:16px;margin-bottom:22px">
+    <div style="background:#131316;border:1px solid #232328;padding:22px 26px">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;letter-spacing:2px;color:#5F5F66;margin-bottom:12px">SALARY BAND · OXYLABS</div>
+      <div style="font-family:'Unbounded',sans-serif;font-weight:700;font-size:26px;color:#C8F135">S$4.2k – 7.8k</div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#5F5F66;margin-top:6px">per month · SG market, scraped live</div>
+    </div>
+    <div style="background:#131316;border:1px solid #232328;padding:22px 26px">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;letter-spacing:2px;color:#5F5F66;margin-bottom:14px">CAREER MAP · OXYLABS</div>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:1px;color:#5F5F66">FROM</span>
+        <span style="font-size:14px;padding:9px 14px;border:1px dashed #2A2A30;color:#9C9BA0">Data / BI Analyst</span>
+        <span style="color:#5F5F66">→</span>
+        <span style="font-size:14px;padding:9px 14px;border:1px solid #C8F135;color:#F4F3EE;background:rgba(200,241,53,.07);font-weight:600">Data Analyst / Assoc. Data Engineer</span>
+        <span style="color:#5F5F66">→</span>
+        <span style="font-size:14px;padding:9px 14px;border:1px dashed #2A2A30;color:#9C9BA0">Senior Data Analyst</span>
+        <span style="font-size:14px;padding:9px 14px;border:1px dashed #2A2A30;color:#9C9BA0">Data Engineer</span>
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:1px;color:#5F5F66;margin-left:8px">LATERAL</span>
+        <span style="font-size:14px;padding:9px 14px;border:1px dashed #2A2A30;color:#9C9BA0">BI Developer</span>
+        <span style="font-size:14px;padding:9px 14px;border:1px dashed #2A2A30;color:#9C9BA0">Data Scientist</span>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap">
+    <div style="font-size:15px;color:#9C9BA0;max-width:560px;line-height:1.6;text-wrap:pretty">Every <b style="color:#C8F135">✓ executed</b> bar is code <b style="color:#F4F3EE">this generated agent</b> wrote, run in an isolated Daytona sandbox and graded against SkillsFuture's own K&amp;A rubric.</div>
+    <div style="display:flex;gap:10px">
+      <button onClick="{{ downloadSpec }}" style="background:#C8F135;color:#0A0A0C;border:none;font-weight:700;font-size:16px;padding:14px 26px;cursor:pointer">⬇ Download agent spec</button>
+      <button onClick="{{ copySpec }}" style="background:none;border:1px solid #232328;color:#F4F3EE;font-size:15px;padding:14px 22px;cursor:pointer" style-hover="border-color:#C8F135;color:#C8F135">{{ copyLabel }}</button>
+      <button onClick="{{ adjustLoadout }}" style="background:none;border:1px solid #232328;color:#9C9BA0;font-size:15px;padding:14px 22px;cursor:pointer" style-hover="border-color:#C8F135;color:#C8F135">⟳ Adjust loadout</button>
+    </div>
+  </div>
+</section>
+</sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;simSpeed&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:1,&quot;min&quot;:0.5,&quot;max&quot;:2.5,&quot;step&quot;:0.25,&quot;unit&quot;:&quot;×&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Demo&quot;},&quot;autoAdvance&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Demo&quot;},&quot;showBudget&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Loadout&quot;}}">
+class Component extends DCLogic {
+  constructor(p){
+    super(p);
+    this.S=[
+      {id:'eng',nm:'Data Engineering',off:2,exec:1,base:71,ref:96,ka:'clean data · merge disparate sources · run ETL'},
+      {id:'dba',nm:'Database Administration',off:2,exec:1,base:40,ref:88,ka:'write & optimise SQL · enforce integrity constraints'},
+      {id:'ana',nm:'Data Analytics',off:2,exec:1,base:32,ref:85,ka:'model relationships · validate statistical assumptions'},
+      {id:'viz',nm:'Data Visualisation',off:3,exec:1,base:58,ref:94,ka:'shape the data behind the chart · pick honest encodings'},
+      {id:'stk',nm:'Stakeholder Management',off:2,exec:0,base:55,ref:70,ka:'rubric-only — scored against the K&A checklist, never executed'},
+      {id:'eth',nm:'Data Ethics',off:1,exec:0,base:44,ref:66,ka:'rubric-only — scored against the K&A checklist, never executed'}
+    ];
+    this.state={screen:'request',instr:'Focus on messy inputs; flag anything ambiguous.',
+      targets:{eng:2,dba:2,ana:4,viz:3,stk:2,eth:0},
+      lit:{sf:true,oxy:false,kimi:false,day:false,nos:false},
+      steps:[],sbx:[],wb:{},wr:{},pb:{},pr:{},execPct:0,rubPct:0,stage:'',runDone:false,copied:false};
+    this._run=0;
+  }
+  sp(){return this.props.simSpeed??1}
+  w(ms){return new Promise(r=>setTimeout(r,ms/this.sp()))}
+  onList(){return this.S.filter(s=>this.state.targets[s.id]>0)}
+  runList(){return this.onList().filter(s=>s.exec)}
+  rubList(){return this.onList().filter(s=>!s.exec)}
+  avg(list,k){if(!list.length)return 0;return Math.round(list.reduce((a,s)=>a+s[k],0)/list.length)}
+  nav(sc){
+    if(sc==='prove'){this._run++;this.setState({screen:'prove'});setTimeout(()=>this.runSim(),60);}
+    else{this._run++;
+      const st={screen:sc};
+      if(sc==='deliver')st.lit={...this.state.lit,oxy:true};
+      this.setState(st);}
+  }
+  setLevel(id,l){
+    const t={...this.state.targets};
+    t[id]=(t[id]===l)?l-1:l;
+    this.setState({targets:t});
+  }
+  toggle(id){
+    const t={...this.state.targets};
+    const s=this.S.find(x=>x.id===id);
+    t[id]=t[id]>0?0:s.off;
+    this.setState({targets:t});
+  }
+  spent(){return this.S.reduce((a,s)=>{const t=this.state.targets[s.id];return a+(t>0?Math.max(0,t-s.off):0);},0)}
+  async runSim(){
+    const id=this._run,ok=()=>this._run===id&&this.state.screen==='prove';
+    const run=this.runList();
+    const steps=[
+      {t:'Pull official skill profile + K&A rubric',s:'SkillsFuture'},
+      {t:'Generate agent spec v0 from role + loadout',s:'Kimi'},
+      {t:'Baseline — prove each skill in parallel',s:'Daytona · Nosana'},
+      {t:'Skills-gap report → rewrite guidance',s:'Kimi'},
+      {t:'Re-prove — same battery, refined agent',s:'Daytona'}
+    ].map(x=>({...x,st:'idle'}));
+    const sbx=run.map(s=>({id:s.id,nm:s.nm,lvl:'L'+this.state.targets[s.id],running:false,bc:'#232328',t2:'sandbox idle',t2c:'#5F5F66',stat:'queued',statc:'#5F5F66'}));
+    this.setState({steps,sbx,wb:{},wr:{},pb:{},pr:{},execPct:0,rubPct:0,runDone:false,stage:''});
+    const setStep=(i,st)=>{if(!ok())return;const a=this.state.steps.slice();a[i]={...a[i],st};this.setState({steps:a});};
+    const stage=t=>{if(ok())this.setState({stage:t});};
+    const lit=k=>{if(ok())this.setState({lit:{...this.state.lit,[k]:true}});};
+    setStep(0,'run');stage('› pulling official skills + K&A rubric — SkillsFuture…');
+    await this.w(1000);if(!ok())return;setStep(0,'done');
+    setStep(1,'run');lit('kimi');stage('› Kimi — writing agent spec v0 from the role + your loadout…');
+    await this.w(1400);if(!ok())return;setStep(1,'done');
+    setStep(2,'run');lit('day');lit('nos');stage('› Daytona — fanning out '+run.length+' isolated sandboxes in parallel…');
+    await this.round(id,run,false);if(!ok())return;
+    this.fill(false);
+    const eb=this.avg(run,'base'),rb=this.avg(this.rubList(),'base');
+    this.count(id,'execPct',eb,1100);this.count(id,'rubPct',rb,1100);
+    await this.w(1500);if(!ok())return;setStep(2,'done');
+    const gaps=run.filter(s=>s.base<70).length;
+    stage('› baseline — executed '+eb+'% · '+gaps+' gaps found');
+    await this.w(1200);if(!ok())return;
+    setStep(3,'run');stage("› Kimi — rewriting the agent's guidance from its own gaps…");
+    await this.w(1500);if(!ok())return;setStep(3,'done');
+    setStep(4,'run');stage('› re-proving — same battery, refined agent…');
+    await this.round(id,run,true);if(!ok())return;
+    this.fill(true);
+    const er=this.avg(run,'ref'),rr=this.avg(this.rubList(),'ref');
+    this.count(id,'execPct',er,1200);this.count(id,'rubPct',rr,1200);
+    await this.w(1500);if(!ok())return;setStep(4,'done');
+    this.setState({runDone:true,stage:'› executed '+er+'% · rubric '+rr+'% — gaps closed. spec saved → agent_final.md'});
+    if(this.props.autoAdvance){await this.w(2800);if(ok())this.nav('deliver');}
+  }
+  async round(id,run,ref){
+    const ok=()=>this._run===id&&this.state.screen==='prove';
+    const upd=(i,p)=>{if(!ok())return;const a=this.state.sbx.slice();a[i]={...a[i],...p};this.setState({sbx:a});};
+    await Promise.all(run.map(async(s,i)=>{
+      upd(i,{running:true,bc:'#C8F135',t2:'› booting isolated sandbox…',t2c:'#9C9BA0',stat:'running in sandbox',statc:'#C8F135'});
+      await this.w(500+i*170);if(!ok())return;
+      upd(i,{t2:'› executing agent code…'});
+      await this.w(700+((i*211)%350));if(!ok())return;
+      const sc=ref?s.ref:s.base,pass=sc>=70;
+      upd(i,{running:false,bc:pass?'#4E661F':'#66551F',t2:'GRADE: '+(pass?'PASS':'PARTIAL')+' · '+sc+'%',t2c:pass?'#C8F135':'#F5B83D',stat:pass?'✓ sandbox exited 0':'⚠ gap logged',statc:pass?'#C8F135':'#F5B83D'});
+    }));
+  }
+  fill(ref){
+    const wb={...this.state.wb},wr={...this.state.wr},pb={...this.state.pb},pr={...this.state.pr};
+    this.onList().forEach(s=>{if(ref){wr[s.id]=s.ref;pr[s.id]=s.ref;}else{wb[s.id]=s.base;pb[s.id]=s.base;}});
+    this.setState({wb,wr,pb,pr});
+  }
+  count(id,key,to,ms){
+    const from=this.state[key],t0=performance.now(),dur=ms/this.sp();
+    const step=t=>{if(this._run!==id)return;const k=Math.min(1,(t-t0)/dur);
+      this.setState({[key]:Math.round(from+(to-from)*(1-Math.pow(1-k,3)))});
+      if(k<1)requestAnimationFrame(step);};
+    requestAnimationFrame(step);
+  }
+  buildSpec(){
+    const t=this.state.targets;
+    let md='# Agent — Data Analyst / Associate Data Engineer\n\n> Generated & execution-verified by AgentProof · Daytona sandboxes · '+new Date().toISOString().slice(0,10)+'\n\nSector: Infocomm Technology · SSOC 25131 (SkillsFuture)\n\n';
+    if(this.state.instr)md+='## Custom instructions\n'+this.state.instr+'\n\n';
+    md+='## Skill loadout & proof\n\n| skill | target | official | mode | baseline | refined |\n|---|---|---|---|---|---|\n';
+    this.S.forEach(s=>{const tv=t[s.id];if(!tv)return;
+      md+='| '+s.nm+' | L'+tv+' | L'+s.off+' | '+(s.exec?'executed':'rubric')+' | '+s.base+'% | '+s.ref+'% |\n';});
+    md+='\nExecuted skills ran as real code in isolated Daytona sandboxes, graded against the official K&A rubric. Rubric-only skills are LLM-judged and never blended with executed scores.\n';
+    return md;
+  }
+  renderVals(){
+    const st=this.state,T=st.targets;
+    const lime='#C8F135',amber='#F5B83D',dim='#5F5F66',ink='#F4F3EE',mut='#9C9BA0',line='#232328';
+    const screens=['request','loadout','prove','deliver'],labels=['REQUEST','LOADOUT','PROVE','DELIVER'];
+    const cur=screens.indexOf(st.screen);
+    const rail=screens.map((s,i)=>({num:'0'+(i+1),label:labels[i],
+      bc:i===cur?lime:line,c:i===cur?lime:(i<cur?ink:dim),
+      go:()=>this.nav(s)}));
+    const spN={sf:'SkillsFuture',oxy:'Oxylabs',kimi:'Kimi',day:'Daytona',nos:'Nosana'};
+    const sponsors=['sf','oxy','kimi','day','nos'].map(k=>{const on=st.lit[k];
+      return {name:spN[k],bc:on?lime:line,tc:on?ink:dim,dc:on?lime:'#3A3A40',sh:on?'0 0 10px rgba(200,241,53,.8)':'none'};});
+    const spent=this.spent(),budget=8,over=spent>budget;
+    const meter=Array.from({length:budget},(_,i)=>({
+      bg:i<spent?(over?'#FF6459':amber):'#0E0E11',
+      bc:i<spent?(over?'#FF6459':amber):'#2A2A30'}));
+    const loadoutRows=this.S.map(s=>{
+      const t=T[s.id],on=t>0;
+      let note,noteC;
+      if(!on){note='off · dropped from battery + spec';noteC=dim;}
+      else if(t===s.off){note='official · free';noteC=dim;}
+      else if(t>s.off){note='▲ +'+(t-s.off)+' · spends '+(t-s.off)+' pt'+(t-s.off>1?'s':'');noteC=amber;}
+      else{note='▼ '+(t-s.off)+' below official';noteC=mut;}
+      return {nm:s.nm,ka:s.ka,op:on?1:.42,
+        tick:on?'✓':'',tb:on?lime:'#2A2A30',tbg:on?lime:'transparent',
+        badge:s.exec?'✓ execution-verified':'○ rubric only',
+        badgeBg:s.exec?'rgba(200,241,53,.12)':'rgba(156,155,160,.12)',
+        badgeC:s.exec?lime:mut,
+        lvlTxt:on?'L'+t:'OFF',lvlC:on?(t>s.off?amber:lime):dim,note,noteC,
+        toggle:()=>this.toggle(s.id),
+        pips:Array.from({length:6},(_,j)=>{const l=j+1,pon=on&&l<=t,overP=l>s.off;
+          return {l,mark:l===s.off?'◆':'',
+            bg:pon?(overP?amber:lime):'#0E0E11',
+            bc:pon?(overP?amber:lime):'#2A2A30',
+            set:()=>this.setLevel(s.id,l)};})};
+    });
+    const anyOn=this.onList().length>0;
+    const stIcon={idle:['·',dim,dim],run:['▸',lime,ink],done:['✓',lime,mut]};
+    const steps=(st.steps||[]).map(x=>{const m=stIcon[x.st]||stIcon.idle;
+      return {t:x.t,s:x.s,icon:m[0],ic:m[1],c:x.st==='run'?ink:(x.st==='done'?mut:dim)};});
+    const mkRow=(s,live)=>{
+      const t=T[s.id];
+      const pb=live?st.pb[s.id]:s.base,pr=live?st.pr[s.id]:s.ref;
+      return {nm:s.nm,lvl:'L'+t,ka:s.ka,
+        badge:s.exec?'✓ executed':'○ rubric',
+        badgeBg:s.exec?'rgba(200,241,53,.12)':'rgba(156,155,160,.12)',
+        badgeC:s.exec?lime:mut,
+        pbTxt:pb!=null?pb+'%':'—',prTxt:pr!=null?pr+'%':'—',
+        wb:live?(st.wb[s.id]||0):s.base,wr:live?(st.wr[s.id]||0):s.ref};
+    };
+    const barRows=this.onList().map(s=>mkRow(s,true));
+    const finalRows=this.onList().map(s=>mkRow(s,false));
+    const run=this.runList(),rub=this.rubList();
+    const execBase=this.avg(run,'base'),execRef=this.avg(run,'ref');
+    const rubBase=this.avg(rub,'base'),rubRef=this.avg(rub,'ref');
+    return {
+      isRequest:st.screen==='request',isLoadout:st.screen==='loadout',
+      isProve:st.screen==='prove',isDeliver:st.screen==='deliver',
+      rail,sponsors,instr:st.instr,
+      onInstr:e=>this.setState({instr:e.target.value}),
+      goLoadout:()=>this.nav('loadout'),
+      generate:()=>this.nav('prove'),
+      goDeliver:()=>this.nav('deliver'),
+      adjustLoadout:()=>this.nav('loadout'),
+      replay:()=>this.nav('prove'),
+      presetBaseline:()=>this.setState({targets:{eng:2,dba:2,ana:2,viz:3,stk:2,eth:1}}),
+      presetSpecialize:()=>this.setState({targets:{eng:2,dba:2,ana:5,viz:4,stk:2,eth:0}}),
+      presetMax:()=>this.setState({targets:{eng:6,dba:6,ana:6,viz:6,stk:6,eth:6}}),
+      showBudget:this.props.showBudget??true,
+      meter,budgetTxt:over?spent+' / '+budget+' · over — bigger lift, longer build':spent+' / '+budget+' pts',
+      budgetC:over?'#FF6459':(spent>0?amber:dim),
+      loadoutRows,genDisabled:!anyOn,genBg:anyOn?lime:'#3A3A40',
+      steps,stage:st.stage,sbx:st.sbx,barRows,finalRows,
+      execPct:st.execPct,rubPct:st.rubPct,
+      execC:st.runDone?lime:ink,runDone:st.runDone,
+      execBase,execRef,rubBase,rubRef,lift:execRef-execBase,
+      downloadSpec:()=>{const b=new Blob([this.buildSpec()],{type:'text/markdown'});
+        const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='agent_final.md';a.click();},
+      copySpec:()=>{navigator.clipboard.writeText(this.buildSpec());
+        this.setState({copied:true});setTimeout(()=>this.setState({copied:false}),1600);},
+      copyLabel:st.copied?'✓ copied':'⧉ Copy spec'
+    };
+  }
+}
+</script>
+</body>
+</html>
