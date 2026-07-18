@@ -1,0 +1,7 @@
+.venv/
+.env
+__pycache__/
+output.json
+events.jsonl
+dashboard.html
+agent_v0.md
