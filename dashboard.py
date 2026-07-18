@@ -49,11 +49,35 @@ def load_real():
     except Exception:
         pass
 
+    team = None
+    team_p = pathlib.Path("data/demo_team.json")
+    if team_p.exists():                # org chart: fixed demo team manifest
+        d = json.load(open(team_p))["demo"]
+        def fmt_k(v):
+            return f"{v/1000:g}k" if v >= 1000 else str(v)
+        team = {
+            "name": d["name"], "purpose": d["purpose"],
+            "alternates": d.get("off_path_alternates", []),
+            "honesty": d.get("honesty_note", ""),
+            "agents": [{
+                "id": a["id"], "stage": a["stage"], "role": a["role"],
+                "anchor": bool(a.get("anchor")),
+                "execItems": len(a.get("battery_items", [])),
+                "enrich": (lambda e: f"{e['n_postings']} live posting"
+                           f"{'s' if e['n_postings'] != 1 else ''} · {e['n_tools']} tools"
+                           f" · matched via {e['matched_via']}")(a["enrichment_summary"]),
+                # per manifest salary_note: low can be an outlier — render median–high
+                "salary": (lambda b: f"S${fmt_k(b['median'])} – {fmt_k(b['high'])}")(
+                    a["enrichment_summary"]["salary_band"]),
+                "produces": a.get("produces", ""), "consumes": a.get("consumes"),
+            } for a in d["agents"]],
+        }
+
     return {"role": out["role"], "sector": out["sector"], "track": out.get("track", ""),
             "rounds": len(out["rounds"]),
             "totalSkills": len(first) + (len(rub["skills"]) if rub else 0),
             "batteryCount": len(first),
-            "skills": skills, "spec": spec, "salary": salary}
+            "skills": skills, "spec": spec, "salary": salary, "team": team}
 
 
 def main():

@@ -68,6 +68,21 @@ const IS_DEMO_ROLE=ROLE.startsWith('Data Analyst / Associate Data Engineer');
 const ROUNDS=REAL?REAL.rounds:2;
 const SPEC_TEXT=REAL?REAL.spec:null;
 const SALARY=REAL?REAL.salary:{low:4200,high:7800,live:false};
+const TEAM=(REAL&&REAL.team)?REAL.team:{
+  name:'Data pipeline team — fixed demo path',
+  purpose:'One deterministic route for the demo: each stage consumes the previous stage’s real artifact.',
+  agents:[
+    {id:'data-engineer',stage:1,role:'Data Engineer',anchor:false,execItems:1,
+     enrich:'2 live postings · 12 tools · matched via tfidf',salary:'S$5.8k – 12k',
+     produces:'clean, validated dataset artifact',consumes:null},
+    {id:'data-analyst',stage:2,role:'Data Analyst / Associate Data Engineer',anchor:true,execItems:2,
+     enrich:'2 live postings · 12 tools · matched via tfidf+ssoc',salary:'S$2.8k – 5.5k',
+     produces:'analysis / dashboard deliverable',consumes:'data-engineer'},
+    {id:'data-scientist',stage:3,role:'Data Scientist / Artificial Intelligence Scientist',anchor:false,execItems:0,
+     enrich:'1 live posting · 12 tools · matched via tfidf+ssoc',salary:'S$9.8k – 12.5k',
+     produces:'model / insight deliverable',consumes:'data-analyst'}],
+  alternates:['Data Architect','Chief Data Officer / Chief Artificial Intelligence Officer'],
+  honesty:'Seams are EXERCISED — stage N consumes stage N−1’s real artifact in separate sandboxes — but rubric-assessed, NOT execution-verified. Never blended into the executed number.'};
 
 /* ============ state ============ */
 const state={
@@ -471,7 +486,7 @@ function renderDeliver(){
   <div style="display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap">
     <div style="font-size:15px;color:${MUT};max-width:560px;line-height:1.6;text-wrap:pretty">Every <b style="color:${LIME}">✓ executed</b> bar is code <b style="color:${INK}">this generated agent</b> wrote, run in an isolated Daytona sandbox and graded against SkillsFuture's own K&amp;A rubric.</div>
     <div style="display:flex;gap:10px">
-      <button onclick="app.downloadSpec()" style="background:${LIME};color:#0A0A0C;border:none;font-weight:700;font-size:16px;padding:14px 26px;cursor:pointer">⬇ Download agent spec</button>
+      <button onclick="app.openTeam()" style="background:${LIME};color:#0A0A0C;border:none;font-weight:700;font-size:16px;padding:14px 26px;cursor:pointer">⛬ View agent team</button>
       <button id="copyBtn" class="hv" onclick="app.copySpec()" style="background:none;border:1px solid ${LINE};color:${INK};font-size:15px;padding:14px 22px;cursor:pointer">⧉ Copy spec</button>
       <button class="hv" onclick="app.nav('loadout')" style="background:none;border:1px solid ${LINE};color:${MUT};font-size:15px;padding:14px 22px;cursor:pointer">⟳ Adjust loadout</button>
     </div>
@@ -489,6 +504,55 @@ function buildSpec(){
     md+=`| ${s.nm} | L${tv} | L${s.off} | ${s.exec?'executed':'rubric'} | ${s.base}% | ${s.ref}% |\n`;});
   md+='\nExecuted skills ran as real code in isolated Daytona sandboxes, graded against the official K&A rubric. Rubric-only skills are LLM-judged and never blended with executed scores.\n';
   return md;
+}
+
+/* ============ agent team · org chart modal ============ */
+function teamNode(a){
+  const anchor=a.anchor;
+  const badge=a.execItems>0
+    ?`<span style="font-family:${MONO};font-size:11px;padding:3px 8px;background:rgba(200,241,53,.12);color:${LIME}">✓ ${a.execItems} execution-verified item${a.execItems>1?'s':''}</span>`
+    :`<span style="font-family:${MONO};font-size:11px;padding:3px 8px;background:rgba(156,155,160,.12);color:${MUT}">○ rubric-only · NOT execution-verified</span>`;
+  return `<div style="width:520px;max-width:88vw;background:${anchor?'rgba(200,241,53,.05)':INSET};border:1px ${anchor?'solid '+LIME:'solid '+LINE};padding:18px 22px;position:relative">
+    ${anchor?`<div style="position:absolute;top:-11px;left:18px;background:${LIME};color:#0A0A0C;font-family:${MONO};font-size:10.5px;letter-spacing:1px;padding:3px 10px;font-weight:600">THIS AGENT · DELIVERED</div>`:''}
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
+      <span style="font-size:17px;font-weight:700">${esc(a.role)}</span>
+      <span style="font-family:${MONO};font-size:11px;color:${DIM};border:1px solid ${LINE};padding:2px 8px;white-space:nowrap">STAGE ${a.stage}</span>
+    </div>
+    <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">${badge}
+      <span style="font-family:${MONO};font-size:11px;color:${AMBER}">${esc(a.salary)}</span></div>
+    <div style="font-family:${MONO};font-size:11.5px;color:${DIM};margin-top:8px">${esc(a.enrich)}</div>
+  </div>`;
+}
+function seamConnector(a){
+  return `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;padding:2px 0">
+    <div style="width:1px;height:14px;background:#3A3A40"></div>
+    <div style="font-family:${MONO};font-size:11px;color:${MUT};border:1px dashed ${PIPB};padding:4px 12px">▼ &nbsp;${esc(a.produces)}</div>
+    <div style="width:1px;height:14px;background:#3A3A40"></div>
+  </div>`;
+}
+function renderTeam(){
+  const chain=TEAM.agents.map((a,i)=>teamNode(a)+(i<TEAM.agents.length-1?seamConnector(a):'')).join('');
+  const lastProduces=TEAM.agents[TEAM.agents.length-1];
+  const alts=(TEAM.alternates||[]).map(r=>`<span style="font-size:13px;padding:8px 13px;border:1px dashed ${PIPB};color:${MUT}">${esc(r)}</span>`).join('');
+  return `<div id="teamModal" onclick="if(event.target.id==='teamModal')app.closeTeam()" style="position:fixed;inset:0;background:rgba(10,10,12,.82);backdrop-filter:blur(6px);z-index:50;display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;padding:40px 20px;font-family:'Space Grotesk',system-ui,sans-serif;font-size:17px;color:${INK}">
+  <div style="background:${PANEL};border:1px solid ${LINE};max-width:720px;width:100%;padding:30px 34px;position:relative">
+    <button onclick="app.closeTeam()" style="position:absolute;top:14px;right:14px;background:none;border:1px solid ${LINE};color:${MUT};font-size:15px;width:34px;height:34px;cursor:pointer" class="hv">✕</button>
+    <div style="font-family:${MONO};font-size:12px;letter-spacing:3px;color:${LIME};margin-bottom:8px">AGENT TEAM · ORG CHART</div>
+    <h3 style="font-family:${UNB};font-weight:700;font-size:22px;margin:0">${esc(TEAM.name)}</h3>
+    <p style="font-size:14.5px;color:${MUT};margin:10px 0 24px;line-height:1.55;max-width:560px">${esc(TEAM.purpose)}</p>
+    <div style="display:flex;flex-direction:column;align-items:center">${chain}
+      <div style="display:flex;flex-direction:column;align-items:center;gap:2px;padding:2px 0">
+        <div style="width:1px;height:14px;background:#3A3A40"></div>
+        <div style="font-family:${MONO};font-size:11px;color:${DIM}">▼ &nbsp;${esc(lastProduces.produces)}</div>
+      </div>
+    </div>
+    ${alts?`<div style="margin-top:26px">
+      <div style="font-family:${MONO};font-size:11px;letter-spacing:2px;color:${DIM};margin-bottom:10px">OFF-PATH ALTERNATES</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">${alts}</div>
+    </div>`:''}
+    <div style="margin-top:24px;border-top:1px solid ${DIV};padding-top:16px;font-family:${MONO};font-size:11.5px;color:${AMBER};line-height:1.7">${esc(TEAM.honesty)}</div>
+  </div>
+</div>`;
 }
 
 /* ============ app ============ */
@@ -516,9 +580,12 @@ const app={
       Object.assign(state.targets,map[p]);}
     updateLoadout();
   },
-  downloadSpec(){
-    const b=new Blob([buildSpec()],{type:'text/markdown'});
-    const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='agent_final.md';a.click();
+  openTeam(){
+    if(document.getElementById('teamModal'))return;
+    document.body.insertAdjacentHTML('beforeend',renderTeam());
+  },
+  closeTeam(){
+    const m=document.getElementById('teamModal');if(m)m.remove();
   },
   copySpec(){
     navigator.clipboard.writeText(buildSpec());
@@ -526,6 +593,7 @@ const app={
     btn.textContent='✓ copied';setTimeout(()=>{const b=document.getElementById('copyBtn');if(b)b.textContent='⧉ Copy spec';},1600);
   }
 };
+document.addEventListener('keydown',e=>{if(e.key==='Escape')app.closeTeam();});
 buildHeader();app.nav('request');
 </script>
 </body>
