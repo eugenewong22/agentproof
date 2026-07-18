@@ -1,4 +1,4 @@
-import json, time
+import json, math, time
 from config import SANDBOX_TIMEOUT
 from candidate import candidate_solve
 from events import emit
@@ -9,6 +9,8 @@ def parse_grade(stdout):
         if line.startswith("GRADE:"):
             try:
                 s = float(json.loads(line[len("GRADE:"):])["score"])
+                if not math.isfinite(s):
+                    raise ValueError("score must be finite")
                 return max(0.0, min(1.0, s)), None
             except Exception as e:
                 return 0.0, f"garbled GRADE: {e}"

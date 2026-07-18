@@ -35,11 +35,19 @@ def _sheet(name):
 
 def resolve_role(query):
     q = query.strip().lower()
-    if q in DEMO_ROLE.lower():          # demo-role priority: 'data analyst' collides with 3
-        return DEMO_SECTOR, DEMO_TRACK, DEMO_ROLE   # other sectors' roles in sheet order
-    for sector, track, role, *_ in _sheet("Job Role_Description"):
-        if role and q in role.lower():
+    rows = _sheet("Job Role_Description")
+    demo_aliases = {part.strip().lower() for part in DEMO_ROLE.split("/")}
+    if q in demo_aliases:                # 'data analyst' otherwise collides with 3 roles
+        return DEMO_SECTOR, DEMO_TRACK, DEMO_ROLE
+    # Exact names must win over general substring matches: "Data Engineer" is
+    # also a substring of the demo role "Data Analyst / Associate Data Engineer".
+    for sector, track, role, *_ in rows:
+        if role and q == role.strip().lower():
             return sector, track, role
+    if q:
+        for sector, track, role, *_ in rows:
+            if role and q in role.lower():
+                return sector, track, role
     print(f"WARN: role '{query}' not found; falling back to demo role")   # §8: never crash
     return DEMO_SECTOR, DEMO_TRACK, DEMO_ROLE
 
