@@ -1,30 +1,94 @@
 {
   "demo": {
-    "name": "Data pipeline team — fixed demo path",
-    "purpose": "One deterministic route for the demo. No role resolution / fuzzy matching at demo time; the pipeline reads this manifest and runs exactly these agents in this order.",
+    "name": "Enterprise tech org — 12-agent fixed demo path",
+    "purpose": "One deterministic delivery pipeline for the demo. The pipeline reads this manifest and invokes exactly these agents in this order; no role resolution / fuzzy matching at demo time.",
     "sector": "Infocomm Technology",
-    "track": "Data and Artificial Intelligence",
     "enrichment_source": "data/role_enrichment.json",
     "battery_source": "data/battery_seed.json",
+    "team_size": 12,
     "path": [
+      "enterprise-architect",
+      "program-manager",
       "data-engineer",
       "data-analyst",
-      "data-scientist"
+      "data-scientist",
+      "full-stack-developer",
+      "devops-engineer",
+      "infrastructure-engineer",
+      "security-architect",
+      "data-protection-officer",
+      "head-of-product",
+      "project-manager-scrum-master"
+    ],
+    "squads": [
+      "Architecture",
+      "Delivery",
+      "Data & AI",
+      "Build & Platform",
+      "Secure & Govern",
+      "Product & Delivery"
     ],
     "agents": [
       {
-        "id": "data-engineer",
+        "id": "enterprise-architect",
         "stage": 1,
-        "role": "Data Engineer",
-        "enrichment_key": "Data Engineer",
+        "squad": "Architecture",
+        "role": "Enterprise Architect",
+        "enrichment_key": "Enterprise Architect",
         "enrichment_summary": {
           "n_postings": 2,
           "n_tools": 12,
           "n_duties": 8,
           "matched_via": "tfidf",
           "salary_band": {
+            "low": 10000,
+            "median": 13745,
+            "high": 24830,
+            "currency": "SGD"
+          }
+        },
+        "battery_items": [],
+        "produces": "architecture & system design",
+        "consumes": null,
+        "battery_note": "rubric-only — no seed item; badge 'NOT execution-verified' (BUILD_GUIDE §0.5 two-track honesty)"
+      },
+      {
+        "id": "program-manager",
+        "stage": 2,
+        "squad": "Delivery",
+        "role": "Program Manager",
+        "enrichment_key": "Program Manager",
+        "enrichment_summary": {
+          "n_postings": 4,
+          "n_tools": 12,
+          "n_duties": 8,
+          "matched_via": "tfidf+ssoc",
+          "salary_band": {
+            "low": 8000,
+            "median": 10000,
+            "high": 18000,
+            "currency": "SGD"
+          }
+        },
+        "battery_items": [],
+        "produces": "delivery plan & cross-squad orchestration",
+        "consumes": "enterprise-architect",
+        "battery_note": "rubric-only — no seed item; badge 'NOT execution-verified' (BUILD_GUIDE §0.5 two-track honesty)"
+      },
+      {
+        "id": "data-engineer",
+        "stage": 3,
+        "squad": "Data & AI",
+        "role": "Data Engineer",
+        "enrichment_key": "Data Engineer",
+        "enrichment_summary": {
+          "n_postings": 3,
+          "n_tools": 12,
+          "n_duties": 8,
+          "matched_via": "tfidf",
+          "salary_band": {
             "low": 4000,
-            "median": 5750,
+            "median": 6250,
             "high": 12000,
             "currency": "SGD"
           }
@@ -37,13 +101,13 @@
           }
         ],
         "produces": "clean, validated dataset artifact",
-        "consumes": null
+        "consumes": "program-manager"
       },
       {
         "id": "data-analyst",
-        "stage": 2,
+        "stage": 4,
+        "squad": "Data & AI",
         "role": "Data Analyst / Associate Data Engineer",
-        "anchor": true,
         "enrichment_key": "Data Analyst / Associate Data Engineer",
         "enrichment_summary": {
           "n_postings": 2,
@@ -70,11 +134,13 @@
           }
         ],
         "produces": "analysis / dashboard deliverable",
-        "consumes": "data-engineer"
+        "consumes": "data-engineer",
+        "anchor": true
       },
       {
         "id": "data-scientist",
-        "stage": 3,
+        "stage": 5,
+        "squad": "Data & AI",
         "role": "Data Scientist / Artificial Intelligence Scientist",
         "enrichment_key": "Data Scientist / Artificial Intelligence Scientist",
         "enrichment_summary": {
@@ -90,16 +156,177 @@
           }
         },
         "battery_items": [],
-        "battery_note": "rubric-only — no seed item; badge 'NOT execution-verified' (BUILD_GUIDE §0.5 two-track honesty)",
         "produces": "model / insight deliverable",
-        "consumes": "data-analyst"
+        "consumes": "data-analyst",
+        "battery_note": "rubric-only — no seed item; badge 'NOT execution-verified' (BUILD_GUIDE §0.5 two-track honesty)"
+      },
+      {
+        "id": "full-stack-developer",
+        "stage": 6,
+        "squad": "Build & Platform",
+        "role": "Senior Full Stack Developer",
+        "enrichment_key": "Senior Full Stack Developer",
+        "enrichment_summary": {
+          "n_postings": 1,
+          "n_tools": 12,
+          "n_duties": 4,
+          "matched_via": "tfidf+ssoc",
+          "salary_band": {
+            "low": 8000,
+            "median": 10000,
+            "high": 12000,
+            "currency": "SGD"
+          }
+        },
+        "battery_items": [],
+        "produces": "application / UI build",
+        "consumes": "data-scientist",
+        "battery_note": "rubric-only — no seed item; badge 'NOT execution-verified' (BUILD_GUIDE §0.5 two-track honesty)"
+      },
+      {
+        "id": "devops-engineer",
+        "stage": 7,
+        "squad": "Build & Platform",
+        "role": "DevOps Engineer",
+        "enrichment_key": "DevOps Engineer",
+        "enrichment_summary": {
+          "n_postings": 3,
+          "n_tools": 12,
+          "n_duties": 8,
+          "matched_via": "tfidf+ssoc",
+          "salary_band": {
+            "low": 6000,
+            "median": 7500,
+            "high": 12000,
+            "currency": "SGD"
+          }
+        },
+        "battery_items": [],
+        "produces": "CI/CD pipeline + deployment",
+        "consumes": "full-stack-developer",
+        "battery_note": "rubric-only — no seed item; badge 'NOT execution-verified' (BUILD_GUIDE §0.5 two-track honesty)"
+      },
+      {
+        "id": "infrastructure-engineer",
+        "stage": 8,
+        "squad": "Build & Platform",
+        "role": "Infrastructure Engineer",
+        "enrichment_key": "Infrastructure Engineer",
+        "enrichment_summary": {
+          "n_postings": 2,
+          "n_tools": 12,
+          "n_duties": 8,
+          "matched_via": "tfidf+ssoc",
+          "salary_band": {
+            "low": 6500,
+            "median": 7000,
+            "high": 7400,
+            "currency": "SGD"
+          }
+        },
+        "battery_items": [],
+        "produces": "running platform / environment",
+        "consumes": "devops-engineer",
+        "battery_note": "rubric-only — no seed item; badge 'NOT execution-verified' (BUILD_GUIDE §0.5 two-track honesty)"
+      },
+      {
+        "id": "security-architect",
+        "stage": 9,
+        "squad": "Secure & Govern",
+        "role": "Security Architect",
+        "enrichment_key": "Security Architect",
+        "enrichment_summary": {
+          "n_postings": 2,
+          "n_tools": 12,
+          "n_duties": 8,
+          "matched_via": "tfidf+ssoc",
+          "salary_band": {
+            "low": 8000,
+            "median": 11000,
+            "high": 13000,
+            "currency": "SGD"
+          }
+        },
+        "battery_items": [],
+        "produces": "secured pipeline + threat model",
+        "consumes": "infrastructure-engineer",
+        "battery_note": "rubric-only — no seed item; badge 'NOT execution-verified' (BUILD_GUIDE §0.5 two-track honesty)"
+      },
+      {
+        "id": "data-protection-officer",
+        "stage": 10,
+        "squad": "Secure & Govern",
+        "role": "Data Protection Officer",
+        "enrichment_key": "Data Protection Officer",
+        "enrichment_summary": {
+          "n_postings": 2,
+          "n_tools": 12,
+          "n_duties": 8,
+          "matched_via": "tfidf",
+          "salary_band": {
+            "low": 4500,
+            "median": 7350,
+            "high": 10000,
+            "currency": "SGD"
+          }
+        },
+        "battery_items": [],
+        "produces": "compliance / data-governance sign-off",
+        "consumes": "security-architect",
+        "battery_note": "rubric-only — no seed item; badge 'NOT execution-verified' (BUILD_GUIDE §0.5 two-track honesty)"
+      },
+      {
+        "id": "head-of-product",
+        "stage": 11,
+        "squad": "Product & Delivery",
+        "role": "Head of Product",
+        "enrichment_key": "Head of Product",
+        "enrichment_summary": {
+          "n_postings": 3,
+          "n_tools": 12,
+          "n_duties": 8,
+          "matched_via": "tfidf",
+          "salary_band": {
+            "low": 5500,
+            "median": 11750,
+            "high": 28640,
+            "currency": "SGD"
+          }
+        },
+        "battery_items": [],
+        "produces": "product vision / roadmap",
+        "consumes": "data-protection-officer",
+        "battery_note": "rubric-only — no seed item; badge 'NOT execution-verified' (BUILD_GUIDE §0.5 two-track honesty)"
+      },
+      {
+        "id": "project-manager-scrum-master",
+        "stage": 12,
+        "squad": "Product & Delivery",
+        "role": "Project Manager / Scrum Master",
+        "enrichment_key": "Project Manager / Scrum Master",
+        "enrichment_summary": {
+          "n_postings": 4,
+          "n_tools": 12,
+          "n_duties": 8,
+          "matched_via": "tfidf+ssoc",
+          "salary_band": {
+            "low": 6000,
+            "median": 8000,
+            "high": 15000,
+            "currency": "SGD"
+          }
+        },
+        "battery_items": [],
+        "produces": "sprint plan + release",
+        "consumes": "head-of-product",
+        "battery_note": "rubric-only — no seed item; badge 'NOT execution-verified' (BUILD_GUIDE §0.5 two-track honesty)"
       }
     ],
-    "off_path_alternates": [
-      "Data Architect",
-      "Chief Data Officer / Chief Artificial Intelligence Officer"
+    "execution_track": "Only the Data-squad agents with battery_seed items are execution-verified (Data Engineering L2 on the Data Engineer; Database Administration L2 + Data Analytics L2 on the Data Analyst). All other agents are rubric-assessed, badged 'NOT execution-verified' — two tracks, never blended (§0.5).",
+    "salary_notes": [
+      "Data Analyst / Associate Data Engineer: low=800 is an internship outlier — render median/high only (median 2800 / high 5500 SGD).",
+      "Head of Product: high=28640 is an outlier ceiling — present as a range with median."
     ],
-    "salary_note": "Anchor role salary low=800 is an internship outlier; render median/high only (median 2800 / high 5500 SGD).",
-    "honesty_note": "Seams are EXERCISED (stage N consumes stage N-1's real artifact in separate sandboxes) but rubric-assessed, not execution-verified — never blended into the executed number (§7.5)."
+    "honesty_note": "Agent→agent seams are EXERCISED (stage N consumes stage N-1's real artifact in separate sandboxes) but rubric-assessed, not execution-verified — never blended into the executed number (§7.5)."
   }
 }
