@@ -55,6 +55,20 @@ def load_real():
         d = json.load(open(team_p))["demo"]
         def fmt_k(v):
             return f"{v/1000:g}k" if v >= 1000 else str(v)
+
+        def skill_tree(role):
+            """Official per-role skills from the xlsx -> [[name, level, exec], ...]."""
+            try:
+                import framework
+                seen, ded = set(), []
+                for s in framework.get_skills(role):   # same role name can span sectors
+                    if s["code"] not in seen:
+                        seen.add(s["code"]); ded.append(s)
+                exc = {x["code"] for x in framework.select_executable(ded, k=99)}
+                return [[s["skill"], s["required_level"], 1 if s["code"] in exc else 0]
+                        for s in ded]
+            except Exception:
+                return []
         team = {
             "name": d["name"], "purpose": d["purpose"],
             "alternates": d.get("off_path_alternates", []),
@@ -70,6 +84,7 @@ def load_real():
                 "salary": (lambda b: f"S${fmt_k(b['median'])} – {fmt_k(b['high'])}")(
                     a["enrichment_summary"]["salary_band"]),
                 "produces": a.get("produces", ""), "consumes": a.get("consumes"),
+                "sk": skill_tree(a["role"]),
             } for a in d["agents"]],
         }
 

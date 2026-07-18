@@ -15,6 +15,7 @@ a{color:#C8F135;text-decoration:none}a:hover{color:#E2FF7A}
 button{font-family:inherit}
 textarea{font-family:inherit}
 .hv:hover{border-color:#C8F135!important;color:#C8F135!important}
+.tn{cursor:pointer;transition:border-color .2s}.tn:hover{border-color:#C8F135!important}
 @keyframes ap-pulse{0%,100%{opacity:.25}50%{opacity:1}}
 @keyframes ap-sweep{from{left:-45%}to{left:125%}}
 @keyframes ap-glow{0%,100%{box-shadow:0 0 0 rgba(200,241,53,0)}50%{box-shadow:0 0 26px rgba(200,241,53,.35)}}
@@ -74,13 +75,34 @@ const TEAM=(REAL&&REAL.team)?REAL.team:{
   agents:[
     {id:'data-engineer',stage:1,role:'Data Engineer',anchor:false,execItems:1,
      enrich:'2 live postings · 12 tools · matched via tfidf',salary:'S$5.8k – 12k',
-     produces:'clean, validated dataset artifact',consumes:null},
+     produces:'clean, validated dataset artifact',consumes:null,
+     sk:[['Data Engineering',3,1],['Database Administration',3,1],['Data Analytics and Computational Modelling',3,1],
+         ['Configuration Tracking',1,0],['Configuration Tracking',2,0],['Business Needs Analysis',2,0],
+         ['Ethical Culture',3,0],['Data Collection and Analysis',3,0],['Impact Indicators, Measurement and Reporting',3,0],
+         ['Software Configuration',3,0],['Programming and Coding',3,0],['Emerging Technology Synthesis',3,0],
+         ['Data Design',3,0],['Stakeholder Management',3,0],['Computational Modelling',3,0],
+         ['Security Architecture',3,0],['Strategy Implementation',3,0],['Change Management',3,0],
+         ['Data Migration',3,0],['Taxonomy Application',4,0],['Emerging Technology Synthesis',4,0],
+         ['Data Ethics',4,0],['Data Governance',4,0],['System Integration',4,0],
+         ['Project Management',4,0],['Quality Standards',4,0]]},
     {id:'data-analyst',stage:2,role:'Data Analyst / Associate Data Engineer',anchor:true,execItems:2,
      enrich:'2 live postings · 12 tools · matched via tfidf+ssoc',salary:'S$2.8k – 5.5k',
-     produces:'analysis / dashboard deliverable',consumes:'data-engineer'},
+     produces:'analysis / dashboard deliverable',consumes:'data-engineer',
+     sk:[['Data Engineering',2,1],['Database Administration',2,1],['Data Analytics',2,1],
+         ['Data Visualisation',3,1],['Data Analytics',3,1],['Stakeholder Management',2,0],
+         ['Business Needs Analysis',2,0],['Business Performance Management',3,0],['Design Thinking Practice',3,0],
+         ['Budgeting',3,0],['Networking',3,0],['Project Management',3,0],
+         ['Data Ethics',3,0],['Business Innovation',4,0]]},
     {id:'data-scientist',stage:3,role:'Data Scientist / Artificial Intelligence Scientist',anchor:false,execItems:0,
      enrich:'1 live posting · 12 tools · matched via tfidf+ssoc',salary:'S$9.8k – 12.5k',
-     produces:'model / insight deliverable',consumes:'data-analyst'}],
+     produces:'model / insight deliverable',consumes:'data-analyst',
+     sk:[['Self-Learning Systems',4,0],['Stakeholder Management',4,0],['Computer Vision Technology',4,0],
+         ['Emerging Technology Synthesis',4,0],['Computational Modelling',5,0],['Business Innovation',5,0],
+         ['Data Ethics',5,0],['Intelligent Reasoning',5,0],['Quality Standards',5,0],
+         ['Software Design',5,0],['Test Planning',5,0],['Business Needs Analysis',5,0],
+         ['Pattern Recognition Systems',5,0],['Data Design',5,0],['Data Governance',5,0],
+         ['Data Strategy',5,0],['Design Thinking Practice',5,0],['Project Management',5,0],
+         ['Solution Architecture',5,0],['Text Analytics and Processing',6,0]]}],
   alternates:['Data Architect','Chief Data Officer / Chief Artificial Intelligence Officer'],
   honesty:'Seams are EXERCISED — stage N consumes stage N−1’s real artifact in separate sandboxes — but rubric-assessed, NOT execution-verified. Never blended into the executed number.'};
 
@@ -512,7 +534,7 @@ function teamNode(a,i){
   const badge=a.execItems>0
     ?`<span style="font-family:${MONO};font-size:11px;padding:3px 8px;background:rgba(200,241,53,.12);color:${LIME}">✓ ${a.execItems} execution-verified item${a.execItems>1?'s':''}</span>`
     :`<span style="font-family:${MONO};font-size:11px;padding:3px 8px;background:rgba(156,155,160,.12);color:${MUT}">○ rubric-only · NOT execution-verified</span>`;
-  return `<div id="tnode-${i}" style="width:400px;max-width:82vw;background:${anchor?'rgba(200,241,53,.05)':INSET};border:1px solid ${anchor?LIME:LINE};padding:16px 20px;position:relative;z-index:2">
+  return `<div id="tnode-${i}" class="tn" onclick="app.openSkillTree(${i})" title="View skill tree" style="width:400px;max-width:82vw;background:${anchor?'rgba(200,241,53,.05)':INSET};border:1px solid ${anchor?LIME:LINE};padding:16px 20px;position:relative;z-index:2">
     ${anchor?`<div style="position:absolute;top:-11px;left:16px;background:${LIME};color:#0A0A0C;font-family:${MONO};font-size:10.5px;letter-spacing:1px;padding:3px 10px;font-weight:600">THIS AGENT · DELIVERED</div>`:''}
     <div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
       <span style="font-size:16.5px;font-weight:700">${esc(a.role)}</span>
@@ -521,7 +543,38 @@ function teamNode(a,i){
     <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">${badge}
       <span style="font-family:${MONO};font-size:11px;color:${AMBER}">${esc(a.salary)}</span></div>
     <div style="font-family:${MONO};font-size:11.5px;color:${DIM};margin-top:8px">${esc(a.enrich)}</div>
+    <div style="font-family:${MONO};font-size:10.5px;letter-spacing:1px;color:${DIM};margin-top:9px">▸ CLICK FOR SKILL TREE</div>
   </div>`;
+}
+function skillTreeRow(r){
+  const [nm,lvl,ex]=r;
+  const pips=[1,2,3,4,5,6].map(l=>
+    `<span style="display:inline-block;width:26px;height:19px;border:1px solid ${l<=lvl?(ex?LIME:'#55555E'):PIPB};background:${l<=lvl?(ex?LIME:'#55555E'):INSET};margin-right:5px"></span>`).join('');
+  return `<div style="display:grid;grid-template-columns:1fr auto 58px;gap:18px;align-items:center;padding:11px 0;border-bottom:1px solid ${DIV}">
+    <div style="display:flex;align-items:center;gap:9px;font-size:15px;font-weight:600;min-width:0">
+      <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(nm)}</span>
+      ${ex?`<span style="font-family:${MONO};font-size:10.5px;padding:2px 7px;background:rgba(200,241,53,.12);color:${LIME};white-space:nowrap">✓ battery</span>`
+          :`<span style="font-family:${MONO};font-size:10.5px;padding:2px 7px;background:rgba(156,155,160,.12);color:${MUT};white-space:nowrap">○ rubric</span>`}
+    </div>
+    <div style="white-space:nowrap">${pips}</div>
+    <div style="font-family:${UNB};font-weight:700;font-size:15px;color:${ex?LIME:MUT};text-align:right">L${lvl}</div>
+  </div>`;
+}
+function renderSkillTree(i){
+  const a=TEAM.agents[i];
+  const rows=(a.sk||[]).slice().sort((x,y)=>(y[2]-x[2])||(x[1]-y[1]));
+  const nExec=rows.filter(r=>r[2]).length;
+  return `<div id="teamModal" onclick="if(event.target.id==='teamModal')app.closeTeam()" style="position:fixed;inset:0;background:rgba(10,10,12,.82);backdrop-filter:blur(6px);z-index:50;display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;padding:40px 20px;font-family:'Space Grotesk',system-ui,sans-serif;font-size:17px;color:${INK}">
+  <div style="background:${PANEL};border:1px solid ${LINE};max-width:760px;width:100%;padding:30px 34px;position:relative">
+    <button onclick="app.closeTeam()" style="position:absolute;top:14px;right:14px;background:none;border:1px solid ${LINE};color:${MUT};font-size:15px;width:34px;height:34px;cursor:pointer" class="hv">✕</button>
+    <button onclick="app.openTeam(true)" class="hv" style="background:none;border:1px solid ${LINE};color:${MUT};font-family:${MONO};font-size:12px;letter-spacing:1px;padding:8px 14px;cursor:pointer;margin-bottom:18px">← ORG CHART</button>
+    <div style="font-family:${MONO};font-size:12px;letter-spacing:3px;color:${LIME};margin-bottom:8px">SKILL TREE · STAGE ${a.stage}${a.anchor?' · THIS AGENT':''}</div>
+    <h3 style="font-family:${UNB};font-weight:700;font-size:22px;margin:0">${esc(a.role)}</h3>
+    <div style="font-family:${MONO};font-size:12px;color:${DIM};margin:10px 0 6px">${rows.length} official skills · <span style="color:${LIME}">${nExec} in execution battery</span> · <span style="color:${AMBER}">${esc(a.salary)}</span> · levels are the official required levels (SkillsFuture)</div>
+    <div style="margin-top:12px">${rows.map(skillTreeRow).join('')||`<div style="font-family:${MONO};font-size:12px;color:${DIM};padding:14px 0">no skill data for this role</div>`}</div>
+    <div style="margin-top:20px;font-family:${MONO};font-size:11.5px;color:${DIM};line-height:1.7">✓ battery = proven by execution in this pipeline's Daytona sandboxes<br>○ rubric = LLM-judged against the K&amp;A checklist — never blended with executed scores</div>
+  </div>
+</div>`;
 }
 function renderTeam(){
   const chain=TEAM.agents.map((a,i)=>teamNode(a,i)).join('');
@@ -613,12 +666,16 @@ const app={
       Object.assign(state.targets,map[p]);}
     updateLoadout();
   },
-  openTeam(){
-    if(document.getElementById('teamModal'))return;
-    document.body.insertAdjacentHTML('beforeend',renderTeam());
+  openTeam(back){
+    const m=document.getElementById('teamModal');
+    if(m){if(!back)return;m.outerHTML=renderTeam();}   // back from a skill tree swaps in place
+    else document.body.insertAdjacentHTML('beforeend',renderTeam());
     requestAnimationFrame(drawTeamLines);        // measure after layout, then draw connectors
-    this._teamRs=()=>drawTeamLines();
-    window.addEventListener('resize',this._teamRs);
+    if(!this._teamRs){this._teamRs=()=>drawTeamLines();window.addEventListener('resize',this._teamRs);}
+  },
+  openSkillTree(i){
+    const m=document.getElementById('teamModal');if(!m)return;
+    m.outerHTML=renderSkillTree(i);
   },
   closeTeam(){
     const m=document.getElementById('teamModal');if(m)m.remove();
