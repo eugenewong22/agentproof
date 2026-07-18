@@ -506,16 +506,16 @@ function buildSpec(){
   return md;
 }
 
-/* ============ agent team · org chart modal ============ */
-function teamNode(a){
+/* ============ agent team · org-chart flowchart modal ============ */
+function teamNode(a,i){
   const anchor=a.anchor;
   const badge=a.execItems>0
     ?`<span style="font-family:${MONO};font-size:11px;padding:3px 8px;background:rgba(200,241,53,.12);color:${LIME}">✓ ${a.execItems} execution-verified item${a.execItems>1?'s':''}</span>`
     :`<span style="font-family:${MONO};font-size:11px;padding:3px 8px;background:rgba(156,155,160,.12);color:${MUT}">○ rubric-only · NOT execution-verified</span>`;
-  return `<div style="width:520px;max-width:88vw;background:${anchor?'rgba(200,241,53,.05)':INSET};border:1px ${anchor?'solid '+LIME:'solid '+LINE};padding:18px 22px;position:relative">
-    ${anchor?`<div style="position:absolute;top:-11px;left:18px;background:${LIME};color:#0A0A0C;font-family:${MONO};font-size:10.5px;letter-spacing:1px;padding:3px 10px;font-weight:600">THIS AGENT · DELIVERED</div>`:''}
+  return `<div id="tnode-${i}" style="width:400px;max-width:82vw;background:${anchor?'rgba(200,241,53,.05)':INSET};border:1px solid ${anchor?LIME:LINE};padding:16px 20px;position:relative;z-index:2">
+    ${anchor?`<div style="position:absolute;top:-11px;left:16px;background:${LIME};color:#0A0A0C;font-family:${MONO};font-size:10.5px;letter-spacing:1px;padding:3px 10px;font-weight:600">THIS AGENT · DELIVERED</div>`:''}
     <div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
-      <span style="font-size:17px;font-weight:700">${esc(a.role)}</span>
+      <span style="font-size:16.5px;font-weight:700">${esc(a.role)}</span>
       <span style="font-family:${MONO};font-size:11px;color:${DIM};border:1px solid ${LINE};padding:2px 8px;white-space:nowrap">STAGE ${a.stage}</span>
     </div>
     <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">${badge}
@@ -523,36 +523,69 @@ function teamNode(a){
     <div style="font-family:${MONO};font-size:11.5px;color:${DIM};margin-top:8px">${esc(a.enrich)}</div>
   </div>`;
 }
-function seamConnector(a){
-  return `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;padding:2px 0">
-    <div style="width:1px;height:14px;background:#3A3A40"></div>
-    <div style="font-family:${MONO};font-size:11px;color:${MUT};border:1px dashed ${PIPB};padding:4px 12px">▼ &nbsp;${esc(a.produces)}</div>
-    <div style="width:1px;height:14px;background:#3A3A40"></div>
-  </div>`;
-}
 function renderTeam(){
-  const chain=TEAM.agents.map((a,i)=>teamNode(a)+(i<TEAM.agents.length-1?seamConnector(a):'')).join('');
-  const lastProduces=TEAM.agents[TEAM.agents.length-1];
-  const alts=(TEAM.alternates||[]).map(r=>`<span style="font-size:13px;padding:8px 13px;border:1px dashed ${PIPB};color:${MUT}">${esc(r)}</span>`).join('');
+  const chain=TEAM.agents.map((a,i)=>teamNode(a,i)).join('');
+  const last=TEAM.agents[TEAM.agents.length-1];
+  const alts=(TEAM.alternates||[]).map((r,i)=>
+    `<div id="talt-${i}" style="font-size:13px;padding:9px 14px;border:1px dashed ${PIPB};color:${MUT};background:${PANEL};position:relative;z-index:2">${esc(r)}</div>`).join('');
+  const seams=TEAM.agents.slice(0,-1).map((a,i)=>
+    `<div id="seam-${i}" style="position:absolute;z-index:3;transform:translate(-50%,-50%);font-family:${MONO};font-size:11px;color:${MUT};border:1px dashed ${PIPB};background:${PANEL};padding:4px 12px;white-space:nowrap">${esc(a.produces)}</div>`).join('');
   return `<div id="teamModal" onclick="if(event.target.id==='teamModal')app.closeTeam()" style="position:fixed;inset:0;background:rgba(10,10,12,.82);backdrop-filter:blur(6px);z-index:50;display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;padding:40px 20px;font-family:'Space Grotesk',system-ui,sans-serif;font-size:17px;color:${INK}">
-  <div style="background:${PANEL};border:1px solid ${LINE};max-width:720px;width:100%;padding:30px 34px;position:relative">
+  <div style="background:${PANEL};border:1px solid ${LINE};max-width:900px;width:100%;padding:30px 34px;position:relative">
     <button onclick="app.closeTeam()" style="position:absolute;top:14px;right:14px;background:none;border:1px solid ${LINE};color:${MUT};font-size:15px;width:34px;height:34px;cursor:pointer" class="hv">✕</button>
     <div style="font-family:${MONO};font-size:12px;letter-spacing:3px;color:${LIME};margin-bottom:8px">AGENT TEAM · ORG CHART</div>
     <h3 style="font-family:${UNB};font-weight:700;font-size:22px;margin:0">${esc(TEAM.name)}</h3>
-    <p style="font-size:14.5px;color:${MUT};margin:10px 0 24px;line-height:1.55;max-width:560px">${esc(TEAM.purpose)}</p>
-    <div style="display:flex;flex-direction:column;align-items:center">${chain}
-      <div style="display:flex;flex-direction:column;align-items:center;gap:2px;padding:2px 0">
-        <div style="width:1px;height:14px;background:#3A3A40"></div>
-        <div style="font-family:${MONO};font-size:11px;color:${DIM}">▼ &nbsp;${esc(lastProduces.produces)}</div>
+    <p style="font-size:14.5px;color:${MUT};margin:10px 0 26px;line-height:1.55;max-width:620px">${esc(TEAM.purpose)}</p>
+    <div id="chartWrap" style="position:relative;display:grid;grid-template-columns:1fr 265px;gap:36px;align-items:start">
+      <svg id="chartSvg" style="position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none;overflow:visible">
+        <defs>
+          <marker id="arrLime" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0L10,5L0,10z" fill="${LIME}"/></marker>
+          <marker id="arrDim" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0L10,5L0,10z" fill="${DIM}"/></marker>
+        </defs>
+        <g id="chartLines"></g>
+      </svg>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:84px;padding:6px 0 10px">${chain}
+        <div id="tterm" style="font-family:${MONO};font-size:11px;color:${DIM};border:1px dashed ${PIPB};background:${PANEL};padding:5px 13px;position:relative;z-index:2">⦿ &nbsp;${esc(last.produces)}</div>
       </div>
+      <div id="altCol" style="display:flex;flex-direction:column;gap:18px;padding-top:6px">
+        <div style="font-family:${MONO};font-size:11px;letter-spacing:2px;color:${DIM}">OFF-PATH ALTERNATES</div>
+        ${alts}
+      </div>
+      ${seams}
     </div>
-    ${alts?`<div style="margin-top:26px">
-      <div style="font-family:${MONO};font-size:11px;letter-spacing:2px;color:${DIM};margin-bottom:10px">OFF-PATH ALTERNATES</div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">${alts}</div>
-    </div>`:''}
-    <div style="margin-top:24px;border-top:1px solid ${DIV};padding-top:16px;font-family:${MONO};font-size:11.5px;color:${AMBER};line-height:1.7">${esc(TEAM.honesty)}</div>
+    <div style="margin-top:26px;border-top:1px solid ${DIV};padding-top:16px;font-family:${MONO};font-size:11.5px;color:${AMBER};line-height:1.7">${esc(TEAM.honesty)}</div>
   </div>
 </div>`;
+}
+function drawTeamLines(){
+  const wrap=document.getElementById('chartWrap'),g=document.getElementById('chartLines');
+  if(!wrap||!g)return;
+  const W=wrap.getBoundingClientRect();
+  const rel=el=>{const r=el.getBoundingClientRect();
+    return {x:r.left-W.left,y:r.top-W.top,w:r.width,h:r.height,
+            cx:r.left-W.left+r.width/2,cy:r.top-W.top+r.height/2};};
+  let paths='';
+  const n=TEAM.agents.length;
+  // main spine: node -> node, artifact chip centered on each connector
+  for(let i=0;i<n-1;i++){
+    const a=rel(document.getElementById('tnode-'+i)),b=rel(document.getElementById('tnode-'+(i+1)));
+    paths+=`<path d="M${a.cx},${a.y+a.h} L${b.cx},${b.y-2}" stroke="${DIM}" stroke-width="1.5" fill="none" marker-end="url(#arrLime)"/>`;
+    const chip=document.getElementById('seam-'+i);
+    if(chip){chip.style.left=a.cx+'px';chip.style.top=((a.y+a.h+b.y)/2)+'px';}
+  }
+  // terminal deliverable stub off the last node
+  const lastN=rel(document.getElementById('tnode-'+(n-1))),term=document.getElementById('tterm');
+  if(term){const t=rel(term);
+    paths+=`<path d="M${lastN.cx},${lastN.y+lastN.h} L${t.cx},${t.y-2}" stroke="${DIM}" stroke-width="1.5" fill="none" marker-end="url(#arrLime)"/>`;}
+  // dashed elbows: anchor node -> off-path alternates
+  const ai=Math.max(0,TEAM.agents.findIndex(a=>a.anchor));
+  const src=rel(document.getElementById('tnode-'+ai));
+  (TEAM.alternates||[]).forEach((_,i)=>{
+    const alt=document.getElementById('talt-'+i);if(!alt)return;
+    const t=rel(alt),midX=src.x+src.w+((t.x-(src.x+src.w))/2);
+    paths+=`<path d="M${src.x+src.w},${src.cy} L${midX},${src.cy} L${midX},${t.cy} L${t.x-3},${t.cy}" stroke="${DIM}" stroke-width="1.2" stroke-dasharray="4 4" fill="none" marker-end="url(#arrDim)"/>`;
+  });
+  g.innerHTML=paths;
 }
 
 /* ============ app ============ */
@@ -583,9 +616,13 @@ const app={
   openTeam(){
     if(document.getElementById('teamModal'))return;
     document.body.insertAdjacentHTML('beforeend',renderTeam());
+    requestAnimationFrame(drawTeamLines);        // measure after layout, then draw connectors
+    this._teamRs=()=>drawTeamLines();
+    window.addEventListener('resize',this._teamRs);
   },
   closeTeam(){
     const m=document.getElementById('teamModal');if(m)m.remove();
+    if(this._teamRs){window.removeEventListener('resize',this._teamRs);this._teamRs=null;}
   },
   copySpec(){
     navigator.clipboard.writeText(buildSpec());
