@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0A0A0C">
+<title>AgentProof</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;900&family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+html,body{margin:0;padding:0;background:#0A0A0C}
+a{color:#C8F135;text-decoration:none}a:hover{color:#E2FF7A}
+::selection{background:#C8F135;color:#0A0A0C}
+button{font-family:inherit}
+textarea{font-family:inherit}
+.hv:hover{border-color:#C8F135!important;color:#C8F135!important}
+@keyframes ap-pulse{0%,100%{opacity:.25}50%{opacity:1}}
+@keyframes ap-sweep{from{left:-45%}to{left:125%}}
+@keyframes ap-glow{0%,100%{box-shadow:0 0 0 rgba(200,241,53,0)}50%{box-shadow:0 0 26px rgba(200,241,53,.35)}}
+</style>
+</head>
+<body>
+<!--AP_REAL-->
+<div id="app" style="min-height:100vh;background:#0A0A0C;color:#F4F3EE;font-family:'Space Grotesk',system-ui,sans-serif;font-size:17px">
+  <header style="display:flex;align-items:center;justify-content:space-between;gap:14px 24px;flex-wrap:wrap;padding:16px 44px;border-bottom:1px solid #232328;position:sticky;top:0;background:rgba(10,10,12,.94);backdrop-filter:blur(8px);z-index:10">
+    <div style="display:flex;align-items:center;gap:14px">
+      <div style="width:38px;height:38px;background:#C8F135;color:#0A0A0C;display:grid;place-items:center;font-family:'Unbounded',sans-serif;font-weight:900;font-size:18px">A</div>
+      <div>
+        <div style="font-family:'Unbounded',sans-serif;font-weight:700;font-size:15px;letter-spacing:.6px">AGENTPROOF</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#9C9BA0;letter-spacing:.4px">verified by execution, not by claim</div>
+      </div>
+    </div>
+    <nav id="rail" style="display:flex;gap:6px"></nav>
+    <div id="chips" style="display:flex;gap:7px;flex-wrap:wrap"></div>
+  </header>
+  <div id="root"></div>
+</div>
+<script>
+'use strict';
+/* ============ tokens ============ */
+const LIME='#C8F135',AMBER='#F5B83D',RED='#FF6459',INK='#F4F3EE',MUT='#9C9BA0',DIM='#5F5F66',LINE='#232328',
+      PANEL='#131316',INSET='#0E0E11',DIV='#1A1A1E',PIPB='#2A2A30',
+      MONO="'IBM Plex Mono',monospace",UNB="'Unbounded',sans-serif",
+      GRAD='linear-gradient(90deg,#8CC63F,#C8F135)';
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+/* ============ demo controls (URL params: ?speed=1.5&auto=1&budget=0) ============ */
+const Q=new URLSearchParams(location.search);
+const SIMSPEED=Math.min(2.5,Math.max(.5,parseFloat(Q.get('speed'))||1));
+const AUTOADV=Q.get('auto')==='1';
+const SHOWBUDGET=Q.get('budget')!=='0';
+
+/* ============ data: real pipeline data if injected, else design-scripted ============ */
+const REAL=window.AP_REAL||null;
+const SCRIPTED=[
+  {id:'eng',nm:'Data Engineering',off:2,exec:1,base:71,ref:96,ka:'clean data · merge disparate sources · run ETL'},
+  {id:'dba',nm:'Database Administration',off:2,exec:1,base:40,ref:88,ka:'write & optimise SQL · enforce integrity constraints'},
+  {id:'ana',nm:'Data Analytics',off:2,exec:1,base:32,ref:85,ka:'model relationships · validate statistical assumptions'},
+  {id:'viz',nm:'Data Visualisation',off:3,exec:1,base:58,ref:94,ka:'shape the data behind the chart · pick honest encodings'},
+  {id:'stk',nm:'Stakeholder Management',off:2,exec:0,base:55,ref:70,ka:'rubric-only — scored against the K&A checklist, never executed'},
+  {id:'eth',nm:'Data Ethics',off:1,exec:0,base:44,ref:66,ka:'rubric-only — scored against the K&A checklist, never executed'}
+];
+const S=REAL?REAL.skills:SCRIPTED;
+const ROLE=REAL?REAL.role:'Data Analyst / Associate Data Engineer';
+const SECTOR=REAL?REAL.sector:'Infocomm Technology';
+const IS_DEMO_ROLE=ROLE.startsWith('Data Analyst / Associate Data Engineer');
+const ROUNDS=REAL?REAL.rounds:2;
+const SPEC_TEXT=REAL?REAL.spec:null;
+const SALARY=REAL?REAL.salary:{low:4200,high:7800,live:false};
+
+/* ============ state ============ */
+const state={
+  screen:'request',
+  instr:'Focus on messy inputs; flag anything ambiguous.',
+  targets:Object.fromEntries(S.map(s=>[s.id,REAL?s.off:({eng:2,dba:2,ana:4,viz:3,stk:2,eth:0}[s.id]??s.off)])),
+  lit:{sf:true,oxy:false,kimi:false,day:false,nos:false},
+  runDone:false,copied:false
+};
+let RUN=0;                       // run-id guard for stale async timelines
+const sp=()=>SIMSPEED;
+const w=ms=>new Promise(r=>setTimeout(r,ms/sp()));
+const onList=()=>S.filter(s=>state.targets[s.id]>0);
+const runList=()=>onList().filter(s=>s.exec);
+const rubList=()=>onList().filter(s=>!s.exec);
+const mean=(list,k)=>list.length?Math.round(list.reduce((a,s)=>a+s[k],0)/list.length):0;
+function aggExec(ref){           // real: honest level-points coverage over selection; scripted: mean
+  const list=runList();if(!list.length)return 0;
+  if(REAL){const req=list.reduce((a,s)=>a+s.req,0)||1;
+    const gap=list.reduce((a,s)=>a+(ref?s.gapRef:s.gapBase),0);
+    return Math.round((1-gap/req)*100);}
+  return mean(list,ref?'ref':'base');
+}
+function aggRub(ref){
+  const list=rubList();if(!list.length)return 0;
+  if(REAL){const tot=list.reduce((a,s)=>a+s.total,0)||1;
+    return Math.round(100*list.reduce((a,s)=>a+s.covered,0)/tot);}
+  return mean(list,ref?'ref':'base');
+}
+const spent=()=>S.reduce((a,s)=>{const t=state.targets[s.id];return a+(t>0?Math.max(0,t-s.off):0);},0);
+
+/* ============ header: rail + sponsor chips (built once, mutated in place) ============ */
+const RAILDEF=[['request','01','REQUEST'],['loadout','02','LOADOUT'],['prove','03','PROVE'],['deliver','04','DELIVER']];
+const SPONSORS=[['sf','SkillsFuture'],['oxy','Oxylabs'],['kimi','Kimi'],['day','Daytona'],['nos','Nosana']];
+function buildHeader(){
+  document.getElementById('rail').innerHTML=RAILDEF.map(([sc,num,lb])=>
+    `<button id="rail-${sc}" onclick="app.nav('${sc}')" style="background:none;border:1px solid ${LINE};color:${DIM};font-family:${MONO};font-size:12px;letter-spacing:1px;padding:8px 14px;cursor:pointer">${num} ${lb}</button>`).join('');
+  document.getElementById('chips').innerHTML=SPONSORS.map(([k,nm])=>
+    `<div id="chip-${k}" style="display:flex;align-items:center;gap:7px;padding:7px 12px;border:1px solid ${LINE};color:${DIM};font-family:${MONO};font-size:11.5px;border-radius:999px;background:${INSET};transition:all .4s">
+       <span id="dot-${k}" style="width:6px;height:6px;border-radius:50%;background:#3A3A40;box-shadow:none;transition:all .4s"></span>${nm}</div>`).join('');
+}
+function updateHeader(){
+  const cur=RAILDEF.findIndex(r=>r[0]===state.screen);
+  RAILDEF.forEach(([sc],i)=>{const b=document.getElementById('rail-'+sc);
+    b.style.borderColor=i===cur?LIME:LINE;
+    b.style.color=i===cur?LIME:(i<cur?INK:DIM);});
+  SPONSORS.forEach(([k])=>{const on=state.lit[k],c=document.getElementById('chip-'+k),d=document.getElementById('dot-'+k);
+    c.style.borderColor=on?LIME:LINE;c.style.color=on?INK:DIM;
+    d.style.background=on?LIME:'#3A3A40';d.style.boxShadow=on?'0 0 10px rgba(200,241,53,.8)':'none';});
+}
+const lit=k=>{state.lit[k]=true;updateHeader();};
+
+/* ============ shared row templates ============ */
+const badge=(ex,short)=>`<span style="font-family:${MONO};font-size:11px;padding:3px 8px;background:${ex?'rgba(200,241,53,.12)':'rgba(156,155,160,.12)'};color:${ex?LIME:MUT}">${ex?(short?'✓ executed':'✓ execution-verified'):(short?'○ rubric':'○ rubric only')}</span>`;
+function barRow(s,live){       // live=true → widths/labels start empty and are driven by the sim
+  const t=state.targets[s.id];
+  const pb=live?null:s.base,pr=live?null:s.ref;
+  return `<div style="display:flex;flex-direction:column;gap:8px;padding:13px 0;border-bottom:1px solid ${DIV}">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px">
+      <span style="display:flex;align-items:center;gap:10px;font-size:16.5px;font-weight:600">${esc(s.nm)}
+        <span style="font-family:${MONO};font-size:11.5px;color:${DIM}">L${t}</span>${badge(s.exec,true)}</span>
+      <span style="font-family:${MONO};font-size:15px;color:${MUT}"><span id="pb-${s.id}">${pb!=null?pb+'%':'—'}</span> → <b style="color:${LIME}"><span id="pr-${s.id}">${pr!=null?pr+'%':'—'}</span></b></span>
+    </div>
+    <div style="height:12px;background:${INSET};border:1px solid #1E1E23;position:relative;overflow:hidden">
+      <div id="wb-${s.id}" style="position:absolute;top:0;bottom:0;left:0;width:${live?0:s.base}%;background:${AMBER};opacity:.7;transition:width 1.1s cubic-bezier(.4,0,.2,1)"></div>
+      <div id="wr-${s.id}" style="position:absolute;top:0;bottom:0;left:0;width:${live?0:s.ref}%;background:${GRAD};transition:width 1.1s cubic-bezier(.4,0,.2,1)"></div>
+    </div>
+    <div style="font-family:${MONO};font-size:12px;color:${DIM}">${esc(s.ka)}</div>
+  </div>`;
+}
+
+/* ============ screen 01 · Request ============ */
+function renderRequest(){
+  const nSkills=REAL?REAL.totalSkills:14,nBatt=REAL?REAL.batteryCount:6;
+  return `<section style="max-width:1240px;margin:0 auto;padding:64px 44px;display:grid;grid-template-columns:1.05fr .95fr;gap:64px;align-items:start">
+  <div style="display:flex;flex-direction:column;gap:26px;padding-top:20px">
+    <div style="font-family:${MONO};font-size:13px;letter-spacing:3px;color:${LIME}">01 · REQUEST AN AGENT</div>
+    <h1 style="font-family:${UNB};font-weight:900;font-size:52px;line-height:1.08;margin:0;letter-spacing:-.5px">HIRE AN AGENT.<br>WATCH IT<br><span style="color:${LIME}">PROVE ITSELF.</span></h1>
+    <p style="font-size:20px;line-height:1.55;color:${MUT};max-width:520px;margin:0;text-wrap:pretty">Pick a real SkillsFuture role. AgentProof generates that role's skill battery, benchmarks the agent by <b style="color:${INK}">executing its work</b> in isolated Daytona sandboxes, then refines it until the gaps close.</p>
+    <div style="display:flex;gap:26px;font-family:${MONO};font-size:13px;color:${DIM}">
+      <span><b style="color:${INK}">1,977</b> official roles</span>
+      <span><b style="color:${INK}">0</b> invented skills</span>
+      <span><b style="color:${LIME}">100%</b> of green bars ran as code</span>
+    </div>
+  </div>
+  <div style="background:${PANEL};border:1px solid ${LINE};padding:30px 32px;display:flex;flex-direction:column;gap:22px">
+    <div style="display:flex;gap:8px">
+      <div style="flex:1;text-align:center;padding:11px;border:1px solid ${LIME};color:${LIME};font-family:${MONO};font-size:13px;background:rgba(200,241,53,.07)">● I know the role</div>
+      <div style="flex:1;text-align:center;padding:11px;border:1px solid ${LINE};color:${DIM};font-family:${MONO};font-size:13px">○ Describe the task</div>
+    </div>
+    <div>
+      <div style="font-family:${MONO};font-size:11.5px;letter-spacing:2px;color:${DIM};margin-bottom:10px">ROLE · SKILLSFUTURE OFFICIAL</div>
+      <div style="border:1px solid #2E3A16;background:rgba(200,241,53,.05);padding:18px 20px">
+        <div style="font-size:21px;font-weight:700">${esc(ROLE)}</div>
+        <div style="display:flex;gap:24px;margin-top:12px;flex-wrap:wrap">
+          <div><div style="font-family:${MONO};font-size:10.5px;letter-spacing:1px;color:${DIM}">SECTOR</div><div style="font-size:15px;margin-top:2px">${esc(SECTOR)}</div></div>
+          ${IS_DEMO_ROLE?`<div><div style="font-family:${MONO};font-size:10.5px;letter-spacing:1px;color:${DIM}">SSOC</div><div style="font-size:15px;margin-top:2px;font-family:${MONO}">25131</div></div>`:''}
+          <div><div style="font-family:${MONO};font-size:10.5px;letter-spacing:1px;color:${DIM}">OFFICIAL SKILLS</div><div style="font-size:15px;margin-top:2px">${nSkills} · ${nBatt} in battery</div></div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div style="font-family:${MONO};font-size:11.5px;letter-spacing:2px;color:${DIM};margin-bottom:10px">CUSTOM INSTRUCTIONS</div>
+      <textarea id="instr" rows="3" oninput="app.onInstr(this.value)" style="width:100%;box-sizing:border-box;background:${INSET};border:1px solid ${LINE};color:${INK};font-size:15px;padding:14px 16px;resize:vertical;outline:none;line-height:1.5">${esc(state.instr)}</textarea>
+    </div>
+    <button onclick="app.nav('loadout')" style="background:${LIME};color:#0A0A0C;border:none;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:18px;padding:17px;cursor:pointer;letter-spacing:.3px">Next · Skill loadout →</button>
+  </div>
+</section>`;
+}
+
+/* ============ screen 02 · Skill Loadout ============ */
+function renderLoadout(){
+  const rows=S.map(s=>`
+    <div id="row-${s.id}" style="display:grid;grid-template-columns:34px 1fr auto 160px;gap:22px;align-items:center;padding:17px 0;border-bottom:1px solid ${DIV};transition:opacity .25s">
+      <button id="tick-${s.id}" onclick="app.toggle('${s.id}')" style="width:26px;height:26px;border:1px solid ${PIPB};background:transparent;color:#0A0A0C;font-size:15px;font-weight:700;cursor:pointer;display:grid;place-items:center;padding:0"></button>
+      <div>
+        <div style="display:flex;align-items:center;gap:10px;font-size:17.5px;font-weight:600">${esc(s.nm)} ${badge(s.exec,false)}</div>
+        <div style="font-family:${MONO};font-size:12px;color:${DIM};margin-top:5px">${esc(s.ka)}</div>
+      </div>
+      <div style="display:flex;gap:7px">${[1,2,3,4,5,6].map(l=>`
+        <div style="display:flex;flex-direction:column;align-items:center;gap:3px">
+          <button id="pip-${s.id}-${l}" onclick="app.setLevel('${s.id}',${l})" title="L${l}" style="width:32px;height:23px;border:1px solid ${PIPB};background:${INSET};cursor:pointer;padding:0;transition:all .15s"></button>
+          <span style="font-family:${MONO};font-size:10px;color:${LIME};height:12px;line-height:12px">${l===s.off?'◆':''}</span>
+        </div>`).join('')}</div>
+      <div style="text-align:right">
+        <div id="lvl-${s.id}" style="font-family:${UNB};font-weight:700;font-size:19px;color:${LIME}"></div>
+        <div id="note-${s.id}" style="font-family:${MONO};font-size:11.5px;color:${DIM};margin-top:3px"></div>
+      </div>
+    </div>`).join('');
+  return `<section style="max-width:1240px;margin:0 auto;padding:48px 44px">
+  <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap;margin-bottom:30px">
+    <div>
+      <div style="font-family:${MONO};font-size:13px;letter-spacing:3px;color:${LIME};margin-bottom:10px">02 · SKILL LOADOUT</div>
+      <h2 style="font-family:${UNB};font-weight:700;font-size:30px;margin:0">${esc(ROLE)}</h2>
+      <div style="font-family:${MONO};font-size:13px;color:${DIM};margin-top:8px">◆ official required level is free · pushing above it spends proof budget · L0 drops the skill</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px;align-items:flex-end">
+      <div style="display:flex;gap:8px">
+        <button class="hv" onclick="app.preset('baseline')" style="background:none;border:1px solid ${LINE};color:${MUT};font-family:${MONO};font-size:12px;letter-spacing:1px;padding:9px 16px;cursor:pointer">BASELINE</button>
+        <button class="hv" onclick="app.preset('specialize')" style="background:none;border:1px solid ${LINE};color:${MUT};font-family:${MONO};font-size:12px;letter-spacing:1px;padding:9px 16px;cursor:pointer">SPECIALIZE</button>
+        <button class="hv" onclick="app.preset('max')" style="background:none;border:1px solid ${LINE};color:${MUT};font-family:${MONO};font-size:12px;letter-spacing:1px;padding:9px 16px;cursor:pointer">MAX</button>
+      </div>
+      ${SHOWBUDGET?`<div style="display:flex;align-items:center;gap:14px;border:1px solid ${LINE};background:${INSET};padding:11px 16px">
+        <span style="font-family:${MONO};font-size:11px;letter-spacing:2px;color:${DIM}">PROOF BUDGET</span>
+        <div style="display:flex;gap:4px">${[0,1,2,3,4,5,6,7].map(i=>`<div id="mb-${i}" style="width:13px;height:20px;background:${INSET};border:1px solid ${PIPB};transition:all .25s"></div>`).join('')}</div>
+        <span id="budgetTxt" style="font-family:${MONO};font-size:13.5px;color:${DIM}"></span>
+      </div>`:''}
+    </div>
+  </div>
+  <div style="background:${PANEL};border:1px solid ${LINE};padding:10px 32px 14px">${rows}</div>
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:24px;margin-top:26px;flex-wrap:wrap">
+    <div style="font-family:${MONO};font-size:12.5px;color:${DIM};line-height:1.7">✓ execution-verified = the agent's code runs in a Daytona sandbox<br>○ rubric only = LLM-judged against the K&amp;A checklist — never blended with executed scores</div>
+    <button id="genBtn" onclick="app.nav('prove')" style="background:${LIME};color:#0A0A0C;border:none;font-weight:700;font-size:19px;padding:18px 40px;cursor:pointer;animation:ap-glow 2.2s infinite">Generate agent →</button>
+  </div>
+</section>`;
+}
+function updateLoadout(){
+  if(state.screen!=='loadout')return;
+  S.forEach(s=>{
+    const t=state.targets[s.id],on=t>0;
+    const row=document.getElementById('row-'+s.id);if(!row)return;
+    row.style.opacity=on?1:.42;
+    const tick=document.getElementById('tick-'+s.id);
+    tick.textContent=on?'✓':'';tick.style.borderColor=on?LIME:PIPB;tick.style.background=on?LIME:'transparent';
+    for(let l=1;l<=6;l++){const p=document.getElementById(`pip-${s.id}-${l}`),pon=on&&l<=t,over=l>s.off;
+      p.style.background=pon?(over?AMBER:LIME):INSET;p.style.borderColor=pon?(over?AMBER:LIME):PIPB;}
+    const lvl=document.getElementById('lvl-'+s.id),note=document.getElementById('note-'+s.id);
+    lvl.textContent=on?'L'+t:'OFF';lvl.style.color=on?(t>s.off?AMBER:LIME):DIM;
+    let n,nc;
+    if(!on){n='off · dropped from battery + spec';nc=DIM;}
+    else if(t===s.off){n='official · free';nc=DIM;}
+    else if(t>s.off){const d=t-s.off;n=`▲ +${d} · spends ${d} pt${d>1?'s':''}`;nc=AMBER;}
+    else{n=`▼ ${t-s.off} below official`;nc=MUT;}
+    note.textContent=n;note.style.color=nc;
+  });
+  const sp8=spent(),over=sp8>8;
+  if(SHOWBUDGET){
+    for(let i=0;i<8;i++){const b=document.getElementById('mb-'+i);if(!b)break;
+      b.style.background=i<sp8?(over?RED:AMBER):INSET;b.style.borderColor=i<sp8?(over?RED:AMBER):PIPB;}
+    const bt=document.getElementById('budgetTxt');
+    if(bt){bt.textContent=over?`${sp8} / 8 · over — bigger lift, longer build`:`${sp8} / 8 pts`;
+      bt.style.color=over?RED:(sp8>0?AMBER:DIM);}
+  }
+  const g=document.getElementById('genBtn'),any=onList().length>0;
+  g.disabled=!any;g.style.background=any?LIME:'#3A3A40';g.style.cursor=any?'pointer':'default';
+}
+
+/* ============ screen 03 · Build & Prove ============ */
+const STEPS=[
+  ['Pull official skill profile + K&A rubric','SkillsFuture'],
+  ['Generate agent spec v0 from role + loadout','Kimi'],
+  ['Baseline — prove each skill in parallel','Daytona · Nosana'],
+  ['Skills-gap report → rewrite guidance','Kimi'],
+  ['Re-prove — same battery, refined agent','Daytona']];
+function renderProve(){
+  const run=runList();
+  return `<section style="max-width:1240px;margin:0 auto;padding:44px 44px 64px">
+  <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin-bottom:26px;flex-wrap:wrap">
+    <div>
+      <div style="font-family:${MONO};font-size:13px;letter-spacing:3px;color:${LIME};margin-bottom:10px">03 · BUILD &amp; PROVE</div>
+      <h2 style="font-family:${UNB};font-weight:700;font-size:30px;margin:0">The proving ground</h2>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="hv" onclick="app.nav('prove')" style="background:none;border:1px solid ${LINE};color:${MUT};font-family:${MONO};font-size:13px;padding:12px 20px;cursor:pointer">↻ replay</button>
+      <button id="goDeliver" onclick="app.nav('deliver')" style="display:none;background:${LIME};color:#0A0A0C;border:none;font-weight:700;font-size:16px;padding:12px 28px;cursor:pointer;animation:ap-glow 1.8s infinite">View the scorecard →</button>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 340px;gap:16px;margin-bottom:16px">
+    <div style="background:${PANEL};border:1px solid ${LINE};padding:24px 28px">
+      <div style="font-family:${MONO};font-size:11.5px;letter-spacing:2px;color:${DIM};margin-bottom:18px">PIPELINE</div>
+      <div style="display:flex;flex-direction:column;gap:13px">${STEPS.map((st,i)=>`
+        <div style="display:flex;align-items:center;gap:14px">
+          <span id="stI-${i}" style="width:22px;text-align:center;font-family:${MONO};font-size:15px;color:${DIM}">·</span>
+          <span id="stT-${i}" style="font-size:16.5px;color:${DIM};flex:1">${st[0]}</span>
+          <span style="font-family:${MONO};font-size:11.5px;color:${DIM}">${st[1]}</span>
+        </div>`).join('')}</div>
+      <div style="font-family:${MONO};font-size:13.5px;color:${LIME};margin-top:20px;min-height:20px;border-top:1px solid ${DIV};padding-top:16px"><span id="stage"></span><span style="animation:ap-pulse .9s infinite">▌</span></div>
+    </div>
+    <div style="background:${PANEL};border:1px solid ${LINE};padding:24px 28px;display:flex;flex-direction:column;justify-content:center;gap:6px;text-align:center">
+      <div style="font-family:${MONO};font-size:11.5px;letter-spacing:2px;color:${DIM}">✓ EXECUTED</div>
+      <div id="execBig" style="font-family:${UNB};font-weight:900;font-size:76px;line-height:1;color:${INK}"><span id="execPct">0</span><span style="font-size:30px">%</span></div>
+      <div style="border-top:1px solid ${DIV};margin-top:12px;padding-top:12px">
+        <div style="font-family:${MONO};font-size:11px;letter-spacing:2px;color:${DIM}">○ RUBRIC-ASSESSED</div>
+        <div style="font-family:${UNB};font-weight:700;font-size:30px;color:${AMBER};margin-top:4px"><span id="rubPct">0</span>%</div>
+        <div style="font-family:${MONO};font-size:10.5px;color:${DIM};margin-top:5px">LLM judge · two numbers, never one blend</div>
+      </div>
+    </div>
+  </div>
+  <div style="background:${PANEL};border:1px solid ${LINE};padding:24px 28px;margin-bottom:16px">
+    <div style="font-family:${MONO};font-size:11.5px;letter-spacing:2px;color:${DIM};margin-bottom:16px">DAYTONA · ISOLATED SANDBOXES IN PARALLEL</div>
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px">${run.map((s,i)=>`
+      <div id="sb-${i}" style="position:relative;overflow:hidden;background:${INSET};border:1px solid ${LINE};padding:15px 18px;transition:border-color .35s">
+        <div id="sbSweep-${i}" style="display:none;position:absolute;top:0;left:-45%;width:45%;height:100%;background:linear-gradient(90deg,transparent,rgba(200,241,53,.09),transparent);animation:ap-sweep 1.1s linear infinite"></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+          <span style="font-weight:600;font-size:16px">${esc(s.nm)}</span>
+          <span style="font-family:${MONO};font-size:11.5px;color:${DIM};border:1px solid ${LINE};padding:2px 8px">L${state.targets[s.id]}</span>
+        </div>
+        <div style="font-family:${MONO};font-size:13px;color:${MUT};margin-top:10px;line-height:1.6;min-height:42px">
+          <div>$ python solve.py</div>
+          <div id="sbT2-${i}" style="color:${DIM}">sandbox idle</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;font-family:${MONO};font-size:12px;color:${DIM};margin-top:8px">
+          <span id="sbDot-${i}" style="display:none;width:8px;height:8px;border-radius:50%;background:${LIME};animation:ap-pulse 1s infinite"></span>
+          <span id="sbStat-${i}">queued</span>
+        </div>
+      </div>`).join('')}</div>
+  </div>
+  <div style="background:${PANEL};border:1px solid ${LINE};padding:24px 28px">
+    <div style="font-family:${MONO};font-size:11.5px;letter-spacing:2px;color:${DIM};margin-bottom:8px">PER-SKILL COVERAGE · BASELINE → REFINED</div>
+    ${onList().map(s=>barRow(s,true)).join('')}
+  </div>
+</section>`;
+}
+function setStep(i,st){
+  const I=document.getElementById('stI-'+i),T=document.getElementById('stT-'+i);if(!I)return;
+  if(st==='run'){I.textContent='▸';I.style.color=LIME;T.style.color=INK;}
+  else if(st==='done'){I.textContent='✓';I.style.color=LIME;T.style.color=MUT;}
+  else{I.textContent='·';I.style.color=DIM;T.style.color=DIM;}
+}
+const setStage=t=>{const e=document.getElementById('stage');if(e)e.textContent=t;};
+function count(id,elId,to,ms){
+  const el=document.getElementById(elId);if(!el)return;
+  const from=parseInt(el.textContent)||0,t0=performance.now(),dur=ms/sp();
+  const step=t=>{if(RUN!==id)return;const k=Math.min(1,(t-t0)/dur);
+    const e=document.getElementById(elId);if(!e)return;
+    e.textContent=Math.round(from+(to-from)*(1-Math.pow(1-k,3)));
+    if(k<1)requestAnimationFrame(step);};
+  requestAnimationFrame(step);
+}
+function sbUpd(i,p){
+  const card=document.getElementById('sb-'+i);if(!card)return;
+  if(p.bc)card.style.borderColor=p.bc;
+  if('running'in p){document.getElementById('sbSweep-'+i).style.display=p.running?'block':'none';
+    document.getElementById('sbDot-'+i).style.display=p.running?'inline-block':'none';}
+  if(p.t2!=null){const t=document.getElementById('sbT2-'+i);t.textContent=p.t2;t.style.color=p.t2c||MUT;}
+  if(p.stat!=null){const st=document.getElementById('sbStat-'+i);st.textContent=p.stat;st.parentElement.style.color=p.statc||DIM;}
+}
+async function simRound(id,run,ref){
+  const ok=()=>RUN===id&&state.screen==='prove';
+  await Promise.all(run.map(async(s,i)=>{
+    if(!ok())return;
+    const boot=REAL&&s.sid?`› booting sandbox ${s.sid.slice(0,8)}…`:'› booting isolated sandbox…';
+    sbUpd(i,{running:true,bc:LIME,t2:boot,t2c:MUT,stat:'running in sandbox',statc:LIME});
+    await w(500+i*170);if(!ok())return;
+    sbUpd(i,{t2:'› executing agent code…',t2c:MUT});
+    await w(700+((i*211)%350));if(!ok())return;
+    const sc=ref?s.ref:s.base,pass=sc>=70;
+    const exitStat=REAL&&s.secs?`✓ sandbox exited 0 · ${s.secs}s`:'✓ sandbox exited 0';
+    sbUpd(i,{running:false,bc:pass?'#4E661F':'#66551F',
+      t2:`GRADE: ${pass?'PASS':'PARTIAL'} · ${sc}%`,t2c:pass?LIME:AMBER,
+      stat:pass?exitStat:'⚠ gap logged',statc:pass?LIME:AMBER});
+  }));
+}
+function fillBars(ref){
+  onList().forEach(s=>{
+    const v=ref?s.ref:s.base;
+    const el=document.getElementById((ref?'wr-':'wb-')+s.id);if(el)el.style.width=v+'%';
+    const p=document.getElementById((ref?'pr-':'pb-')+s.id);if(p)p.textContent=v+'%';
+  });
+}
+async function runSim(){
+  const id=RUN,ok=()=>RUN===id&&state.screen==='prove';
+  const run=runList();
+  state.runDone=false;
+  setStep(0,'run');setStage('› pulling official skills + K&A rubric — SkillsFuture…');
+  await w(1000);if(!ok())return;setStep(0,'done');
+  setStep(1,'run');lit('kimi');setStage('› Kimi — writing agent spec v0 from the role + your loadout…');
+  await w(1400);if(!ok())return;setStep(1,'done');
+  setStep(2,'run');lit('day');lit('nos');setStage(`› Daytona — fanning out ${run.length} isolated sandboxes in parallel…`);
+  await simRound(id,run,false);if(!ok())return;
+  fillBars(false);
+  const eb=aggExec(false),rb=aggRub(false);
+  count(id,'execPct',eb,1100);count(id,'rubPct',rb,1100);
+  await w(1500);if(!ok())return;setStep(2,'done');
+  const gaps=run.filter(s=>s.base<70).length;
+  setStage(`› baseline — executed ${eb}% · ${gaps} gap${gaps===1?'':'s'} found`);
+  await w(1200);if(!ok())return;
+  const er=aggExec(true),rr=aggRub(true);
+  if(REAL&&(ROUNDS<2||gaps===0)){       // honest single-round path: target met at baseline
+    setStep(3,'done');setStep(4,'done');
+    fillBars(true);
+    count(id,'execPct',er,600);count(id,'rubPct',rr,600);
+    await w(900);if(!ok())return;
+    state.runDone=true;
+    setStage(`› executed ${er}% · rubric ${rr}% — target met at baseline, refine skipped. spec saved → agent_final.md`);
+  }else{
+    setStep(3,'run');setStage("› Kimi — rewriting the agent's guidance from its own gaps…");
+    await w(1500);if(!ok())return;setStep(3,'done');
+    setStep(4,'run');setStage('› re-proving — same battery, refined agent…');
+    await simRound(id,run,true);if(!ok())return;
+    fillBars(true);
+    count(id,'execPct',er,1200);count(id,'rubPct',rr,1200);
+    await w(1500);if(!ok())return;setStep(4,'done');
+    state.runDone=true;
+    setStage(`› executed ${er}% · rubric ${rr}% — gaps closed. spec saved → agent_final.md`);
+  }
+  const gd=document.getElementById('goDeliver');if(gd)gd.style.display='inline-block';
+  const eBig=document.getElementById('execBig');if(eBig)eBig.style.color=LIME;
+  if(AUTOADV){await w(2800);if(ok())app.nav('deliver');}
+}
+
+/* ============ screen 04 · Delivered ============ */
+function renderDeliver(){
+  const run=runList(),rub=rubList();
+  const eb=aggExec(false),er=aggExec(true),rbv=aggRub(false),rrv=aggRub(true);
+  const lift=er-eb;
+  const singleRound=REAL&&(ROUNDS<2||lift===0);
+  const rubSub=REAL?`${rub.reduce((a,s)=>a+s.covered,0)}/${rub.reduce((a,s)=>a+s.total,0)} K&amp;A items · LLM judge<br>NOT execution-verified`:'K&amp;A checklist · LLM judge<br>NOT execution-verified';
+  const showMarket=!REAL||!!SALARY;
+  const salTxt=SALARY?`S$${(SALARY.low/1000).toFixed(1)}k – ${(SALARY.high/1000).toFixed(1)}k`:'';
+  const salSub=SALARY&&SALARY.live?'per month · SG market, scraped live':'per month · SG market estimate';
+  return `<section style="max-width:1240px;margin:0 auto;padding:48px 44px 64px">
+  <div style="font-family:${MONO};font-size:13px;letter-spacing:3px;color:${LIME};margin-bottom:10px">04 · DELIVERED</div>
+  <h2 style="font-family:${UNB};font-weight:700;font-size:30px;margin:0 0 34px">${esc(ROLE)}</h2>
+  <div style="display:grid;grid-template-columns:1fr 340px;gap:16px;margin-bottom:16px">
+    <div style="background:${PANEL};border:1px solid ${LINE};padding:34px 38px;display:flex;align-items:flex-end;gap:30px;flex-wrap:wrap">
+      <div>
+        <div style="font-family:${MONO};font-size:11.5px;letter-spacing:2px;color:${DIM};margin-bottom:8px">BASELINE</div>
+        <div style="font-family:${UNB};font-weight:700;font-size:66px;color:${DIM};line-height:1">${eb}%</div>
+      </div>
+      <div style="font-size:44px;color:${LIME};padding-bottom:6px">→</div>
+      <div>
+        <div style="font-family:${MONO};font-size:11.5px;letter-spacing:2px;color:${LIME};margin-bottom:8px">REFINED · EXECUTION-VERIFIED</div>
+        <div style="font-family:${UNB};font-weight:900;font-size:112px;color:${LIME};line-height:1">${er}%</div>
+      </div>
+      <div style="font-family:${MONO};font-size:13px;color:${MUT};padding-bottom:10px">${singleRound?'target met at baseline<br>refine skipped':`+${lift} pts lift<br>one refine pass`}</div>
+    </div>
+    <div style="background:${PANEL};border:1px solid ${LINE};padding:26px 28px;display:flex;flex-direction:column;justify-content:center;gap:8px;text-align:center">
+      <div style="font-family:${MONO};font-size:11px;letter-spacing:2px;color:${DIM}">○ RUBRIC-ASSESSED</div>
+      <div style="font-family:${UNB};font-weight:700;font-size:38px;color:${AMBER}">${(REAL&&rbv===rrv)?rrv+'%':rbv+'% → '+rrv+'%'}</div>
+      <div style="font-family:${MONO};font-size:11px;color:${DIM};line-height:1.7">${rubSub}</div>
+      <div style="font-family:${MONO};font-size:11px;color:${RED};margin-top:6px">two numbers · never one blend</div>
+    </div>
+  </div>
+  <div style="background:${PANEL};border:1px solid ${LINE};padding:24px 28px;margin-bottom:16px">
+    <div style="font-family:${MONO};font-size:11.5px;letter-spacing:2px;color:${DIM};margin-bottom:8px">SCORECARD · EVERY GREEN BAR RAN AS CODE IN A DAYTONA SANDBOX</div>
+    ${onList().map(s=>barRow(s,false)).join('')}
+  </div>
+  ${showMarket?`<div style="display:grid;grid-template-columns:300px 1fr;gap:16px;margin-bottom:22px">
+    <div style="background:${PANEL};border:1px solid ${LINE};padding:22px 26px">
+      <div style="font-family:${MONO};font-size:11.5px;letter-spacing:2px;color:${DIM};margin-bottom:12px">SALARY BAND · OXYLABS</div>
+      <div style="font-family:${UNB};font-weight:700;font-size:26px;color:${LIME}">${salTxt}</div>
+      <div style="font-family:${MONO};font-size:12px;color:${DIM};margin-top:6px">${salSub}</div>
+    </div>
+    <div style="background:${PANEL};border:1px solid ${LINE};padding:22px 26px">
+      <div style="font-family:${MONO};font-size:11.5px;letter-spacing:2px;color:${DIM};margin-bottom:14px">CAREER MAP · OXYLABS</div>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <span style="font-family:${MONO};font-size:10.5px;letter-spacing:1px;color:${DIM}">FROM</span>
+        <span style="font-size:14px;padding:9px 14px;border:1px dashed ${PIPB};color:${MUT}">Data / BI Analyst</span>
+        <span style="color:${DIM}">→</span>
+        <span style="font-size:14px;padding:9px 14px;border:1px solid ${LIME};color:${INK};background:rgba(200,241,53,.07);font-weight:600">${esc(IS_DEMO_ROLE?'Data Analyst / Assoc. Data Engineer':ROLE)}</span>
+        <span style="color:${DIM}">→</span>
+        <span style="font-size:14px;padding:9px 14px;border:1px dashed ${PIPB};color:${MUT}">Senior Data Analyst</span>
+        <span style="font-size:14px;padding:9px 14px;border:1px dashed ${PIPB};color:${MUT}">Data Engineer</span>
+        <span style="font-family:${MONO};font-size:10.5px;letter-spacing:1px;color:${DIM};margin-left:8px">LATERAL</span>
+        <span style="font-size:14px;padding:9px 14px;border:1px dashed ${PIPB};color:${MUT}">BI Developer</span>
+        <span style="font-size:14px;padding:9px 14px;border:1px dashed ${PIPB};color:${MUT}">Data Scientist</span>
+      </div>
+    </div>
+  </div>`:''}
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap">
+    <div style="font-size:15px;color:${MUT};max-width:560px;line-height:1.6;text-wrap:pretty">Every <b style="color:${LIME}">✓ executed</b> bar is code <b style="color:${INK}">this generated agent</b> wrote, run in an isolated Daytona sandbox and graded against SkillsFuture's own K&amp;A rubric.</div>
+    <div style="display:flex;gap:10px">
+      <button onclick="app.downloadSpec()" style="background:${LIME};color:#0A0A0C;border:none;font-weight:700;font-size:16px;padding:14px 26px;cursor:pointer">⬇ Download agent spec</button>
+      <button id="copyBtn" class="hv" onclick="app.copySpec()" style="background:none;border:1px solid ${LINE};color:${INK};font-size:15px;padding:14px 22px;cursor:pointer">⧉ Copy spec</button>
+      <button class="hv" onclick="app.nav('loadout')" style="background:none;border:1px solid ${LINE};color:${MUT};font-size:15px;padding:14px 22px;cursor:pointer">⟳ Adjust loadout</button>
+    </div>
+  </div>
+</section>`;
+}
+
+/* ============ spec builder (real agent_final.md when available) ============ */
+function buildSpec(){
+  if(SPEC_TEXT)return SPEC_TEXT;
+  let md=`# Agent — ${ROLE}\n\n> Generated & execution-verified by AgentProof · Daytona sandboxes · ${new Date().toISOString().slice(0,10)}\n\nSector: ${SECTOR}${IS_DEMO_ROLE?' · SSOC 25131':''} (SkillsFuture)\n\n`;
+  if(state.instr)md+=`## Custom instructions\n${state.instr}\n\n`;
+  md+='## Skill loadout & proof\n\n| skill | target | official | mode | baseline | refined |\n|---|---|---|---|---|---|\n';
+  S.forEach(s=>{const tv=state.targets[s.id];if(!tv)return;
+    md+=`| ${s.nm} | L${tv} | L${s.off} | ${s.exec?'executed':'rubric'} | ${s.base}% | ${s.ref}% |\n`;});
+  md+='\nExecuted skills ran as real code in isolated Daytona sandboxes, graded against the official K&A rubric. Rubric-only skills are LLM-judged and never blended with executed scores.\n';
+  return md;
+}
+
+/* ============ app ============ */
+const app={
+  nav(sc){
+    RUN++;state.screen=sc;
+    if(sc==='deliver')state.lit.oxy=true;
+    const root=document.getElementById('root');
+    if(sc==='request')root.innerHTML=renderRequest();
+    else if(sc==='loadout'){root.innerHTML=renderLoadout();updateLoadout();}
+    else if(sc==='prove'){root.innerHTML=renderProve();setTimeout(runSim,60);}
+    else root.innerHTML=renderDeliver();
+    updateHeader();window.scrollTo(0,0);
+  },
+  onInstr(v){state.instr=v;},
+  setLevel(id,l){const t=state.targets;t[id]=(t[id]===l)?l-1:l;updateLoadout();},
+  toggle(id){const t=state.targets,s=S.find(x=>x.id===id);t[id]=t[id]>0?0:s.off;updateLoadout();},
+  preset(p){
+    if(REAL){S.forEach(s=>{state.targets[s.id]=p==='max'?6:s.off;});
+      if(p==='specialize'&&S.length)state.targets[S[0].id]=Math.min(6,S[0].off+2);}
+    else{
+      const map={baseline:{eng:2,dba:2,ana:2,viz:3,stk:2,eth:1},
+                 specialize:{eng:2,dba:2,ana:5,viz:4,stk:2,eth:0},
+                 max:{eng:6,dba:6,ana:6,viz:6,stk:6,eth:6}};
+      Object.assign(state.targets,map[p]);}
+    updateLoadout();
+  },
+  downloadSpec(){
+    const b=new Blob([buildSpec()],{type:'text/markdown'});
+    const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='agent_final.md';a.click();
+  },
+  copySpec(){
+    navigator.clipboard.writeText(buildSpec());
+    const btn=document.getElementById('copyBtn');if(!btn)return;
+    btn.textContent='✓ copied';setTimeout(()=>{const b=document.getElementById('copyBtn');if(b)b.textContent='⧉ Copy spec';},1600);
+  }
+};
+buildHeader();app.nav('request');
+</script>
+</body>
+</html>
